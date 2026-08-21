@@ -1,0 +1,549 @@
+@import "tailwindcss";
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Custom theme extensions for Tailwind v4 ──────── */
+@theme {
+  /* Soothing Slate-Blue/Teal palette for eye comfort and healthcare branding */
+  --color-lp-bg: rgba(12, 19, 34, 0.85); /* Translucent navy background */
+  --color-lp-surface: #172237; /* Soothing card background */
+  --color-lp-surface-2: #1e2d4a; /* Elevated card background */
+  --color-lp-glass: rgba(23, 34, 55, 0.7);
+  --color-lp-glass-border: rgba(255, 255, 255, 0.08);
+  --color-lp-text: #e2e8f0;
+  --color-lp-text-muted: #94a3b8;
+  --color-lp-heading: #f8fafc;
+  --color-lp-primary: #14b8a6; /* Medical Teal */
+  --color-lp-primary-glow: rgba(20, 184, 166, 0.25);
+  --color-lp-accent: #0ea5e9; /* Medical Sky Blue */
+  --color-lp-cyan: #2dd4bf;
+  --color-lp-cyan-glow: rgba(45, 212, 191, 0.2);
+  --color-lp-emerald: #10b981;
+  --color-lp-rose: #f43f5e; /* Coral red for critical/stops */
+  --color-lp-amber: #f59e0b; /* Amber for warnings/pauses */
+
+  /* Overriding standard Tailwind v4 color mapping to inject medical tones globally */
+  --color-indigo-50: #f0fdfa;
+  --color-indigo-100: #ccfbf1;
+  --color-indigo-200: #99f6e4;
+  --color-indigo-300: #5eead4;
+  --color-indigo-400: #2dd4bf;
+  --color-indigo-500: #14b8a6;
+  --color-indigo-600: #0d9488;
+  --color-indigo-700: #0f766e;
+  --color-indigo-800: #115e59;
+  --color-indigo-900: #134e4a;
+  --color-indigo-950: #0b2e2b;
+
+  --color-purple-500: #0ea5e9;
+  --color-purple-600: #0284c7;
+  --color-purple-950: #0c3554;
+
+  --color-rose-500: #f43f5e;
+  --color-rose-600: #e11d48;
+
+  --color-amber-500: #f59e0b;
+  --color-amber-600: #d97706;
+
+  --color-slate-900: #1a2536;
+  --color-slate-950: #0c1322;
+
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Global root defaults ─────────────────────────── */
+:root {
+  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font: 14.5px/145% var(--sans);
+  letter-spacing: 0.15px;
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 13.5px;
+  }
+}
+
+body {
+  margin: 0;
+  background-image: url("./assets/clinical_abstract_bg.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-color: #0c1322;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: transparent;
+}
+
+p {
+  margin: 0;
+}
+
+/* Custom premium styles for redesigned Auth Page */
+
+@keyframes float-mesh-1 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.15) rotate(120deg);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9) rotate(240deg);
+  }
+}
+
+@keyframes float-mesh-2 {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1.1) rotate(360deg);
+  }
+  50% {
+    transform: translate(-50px, 50px) scale(0.9) rotate(180deg);
+  }
+}
+
+.animate-mesh-1 {
+  animation: float-mesh-1 25s infinite ease-in-out;
+}
+
+.animate-mesh-2 {
+  animation: float-mesh-2 20s infinite ease-in-out;
+}
+
+/* Waveform bars with staggered animations */
+@keyframes wave-glow {
+  0%, 100% {
+    height: 4px;
+    background-color: var(--color-lp-primary);
+  }
+  50% {
+    height: 32px;
+    background-color: var(--color-lp-cyan);
+    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.6));
+  }
+}
+
+.animate-wave-bar {
+  animation: wave-glow 1.4s ease-in-out infinite;
+}
+
+/* Glassmorphism gradient borders with 3D depth */
+.glass-panel {
+  background: rgba(23, 34, 55, 0.65);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top-color: rgba(255, 255, 255, 0.12); /* 3D highlight */
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.2), 
+    0 10px 30px -10px rgba(0, 0, 0, 0.45), 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+}
+
+.glass-panel-hover {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-panel-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgba(20, 184, 166, 0.25);
+  border-top-color: rgba(20, 184, 166, 0.45);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.5), 
+    0 0 25px rgba(20, 184, 166, 0.1), 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+/* 3D Tactile Buttons for Medical Interface */
+.btn-3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  border-radius: 12px;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  border: none;
+}
+
+.btn-3d-primary {
+  background: #14b8a6; /* Medical Teal */
+  color: #ffffff !important;
+  border: 1px solid #0d9488;
+  border-top-color: #2dd4bf;
+  box-shadow: 
+    0 4px 0 0 #0f766e, 
+    0 8px 16px -4px rgba(20, 184, 166, 0.35);
+}
+.btn-3d-primary:hover {
+  background: #0d9488;
+  transform: translateY(1px);
+  box-shadow: 
+    0 3px 0 0 #0f766e, 
+    0 6px 12px -4px rgba(20, 184, 166, 0.35);
+}
+.btn-3d-primary:active {
+  transform: translateY(4px);
+  box-shadow: 
+    0 0px 0 0 #0f766e, 
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-3d-secondary {
+  background: #27354f; /* Slate-blue secondary */
+  color: #e2e8f0 !important;
+  border: 1px solid #1e293b;
+  border-top-color: #3b4e70;
+  box-shadow: 
+    0 4px 0 0 #182235, 
+    0 8px 16px -4px rgba(0, 0, 0, 0.25);
+}
+.btn-3d-secondary:hover {
+  background: #334666;
+  color: #ffffff !important;
+  transform: translateY(1px);
+  box-shadow: 
+    0 3px 0 0 #182235, 
+    0 6px 12px -4px rgba(0, 0, 0, 0.25);
+}
+.btn-3d-secondary:active {
+  transform: translateY(4px);
+  box-shadow: 
+    0 0px 0 0 #182235, 
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-3d-danger {
+  background: #f43f5e; /* Soothing Coral Red */
+  color: #ffffff !important;
+  border: 1px solid #be123c;
+  border-top-color: #fda4af;
+  box-shadow: 
+    0 4px 0 0 #9f1239, 
+    0 8px 16px -4px rgba(244, 63, 94, 0.35);
+}
+.btn-3d-danger:hover {
+  background: #e11d48;
+  transform: translateY(1px);
+  box-shadow: 
+    0 3px 0 0 #9f1239, 
+    0 6px 12px -4px rgba(244, 63, 94, 0.35);
+}
+.btn-3d-danger:active {
+  transform: translateY(4px);
+  box-shadow: 
+    0 0px 0 0 #9f1239, 
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-3d-warning {
+  background: #f59e0b; /* Soothing Amber */
+  color: #ffffff !important;
+  border: 1px solid #d97706;
+  border-top-color: #fde047;
+  box-shadow: 
+    0 4px 0 0 #b45309, 
+    0 8px 16px -4px rgba(245, 158, 11, 0.35);
+}
+.btn-3d-warning:hover {
+  background: #d97706;
+  transform: translateY(1px);
+  box-shadow: 
+    0 3px 0 0 #b45309, 
+    0 6px 12px -4px rgba(245, 158, 11, 0.35);
+}
+.btn-3d-warning:active {
+  transform: translateY(4px);
+  box-shadow: 
+    0 0px 0 0 #b45309, 
+    0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Fix Bootstrap 5 utility overrides on borders & inputs inside AuthPage */
+.auth-page .border {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.auth-page input {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.auth-page input:focus {
+  border-color: rgba(20, 184, 166, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15) !important;
+}
+
+/* Hide scrollbars visually but retain scroll functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Override root constraints for dashboard page */
+#root:has(.dashboard-page) {
+  width: 100%;
+  max-width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  margin: 0;
+  border-inline: 0;
+  text-align: left;
+  background: transparent;
+}
+
+/* Override root constraints for soap generation page */
+#root:has(.soap-generation-page) {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-inline: 0;
+  text-align: left;
+  background: transparent;
+}
+
+/* Dashboard scrollbars with medical accents and smooth feel */
+.dashboard-page ::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.dashboard-page ::-webkit-scrollbar-track {
+  background: rgba(12, 19, 34, 0.4);
+}
+.dashboard-page ::-webkit-scrollbar-thumb {
+  background: #27354f;
+  border-radius: 99px;
+  border: 1px solid #0c1322;
+}
+.dashboard-page ::-webkit-scrollbar-thumb:hover {
+  background: #14b8a6; /* Soothing medical teal glow */
+}
+
+/* Voice recording wave animation */
+@keyframes voice-pulse {
+  0%, 100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1.25);
+  }
+}
+
+.voice-wave-bar {
+  display: inline-block;
+  width: 3px;
+  height: 24px;
+  background-color: #6366f1;
+  border-radius: 99px;
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ██ ADVANCED ANIMATIONS & MICRO-INTERACTIONS
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Slide-in-up entrance (for cards, panels) ────────────── */
+@keyframes slide-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0px);
+  }
+}
+.animate-slide-in-up {
+  animation: slide-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Glow pulse (for active/focus indicators) ────────────── */
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(20, 184, 166, 0.15), 0 0 20px rgba(20, 184, 166, 0.05);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(20, 184, 166, 0.35), 0 0 40px rgba(20, 184, 166, 0.1);
+  }
+}
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+/* ── Shimmer loading skeleton ─────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.02) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+/* ── Floating particles (subtle ambient) ──────────────────── */
+@keyframes float-particle {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translate(15px, -20px) rotate(90deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-10px, -40px) rotate(180deg);
+    opacity: 0.15;
+  }
+  75% {
+    transform: translate(20px, -15px) rotate(270deg);
+    opacity: 0.5;
+  }
+}
+.animate-float-particle {
+  animation: float-particle 12s ease-in-out infinite;
+}
+
+/* ── Subtle breathing scale (for status indicators) ───────── */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+.animate-breathe {
+  animation: breathe 2.5s ease-in-out infinite;
+}
+
+/* ── Border glow scan line ────────────────────────────────── */
+@keyframes border-scan {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animate-border-scan {
+  background: linear-gradient(
+    270deg,
+    rgba(20, 184, 166, 0),
+    rgba(20, 184, 166, 0.4),
+    rgba(14, 165, 233, 0.3),
+    rgba(20, 184, 166, 0)
+  );
+  background-size: 300% 300%;
+  animation: border-scan 4s linear infinite;
+}
+
+/* ── Staggered fade-in for list children ──────────────────── */
+@keyframes stagger-fade {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+.stagger-children > * {
+  animation: stagger-fade 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0.04s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.08s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.12s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.16s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.20s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.24s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.28s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.32s; }
+.stagger-children > *:nth-child(9) { animation-delay: 0.36s; }
+.stagger-children > *:nth-child(10) { animation-delay: 0.40s; }
+
+/* ── Enhanced glass-panel hover with border glow transition ─ */
+.glass-panel {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-panel:hover {
+  border-color: rgba(20, 184, 166, 0.15);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.2),
+    0 10px 30px -10px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    0 0 20px rgba(20, 184, 166, 0.04);
+}
+
+/* ── Gradient text utility ────────────────────────────────── */
+.text-gradient-teal {
+  background: linear-gradient(135deg, #14b8a6, #0ea5e9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Subtle grid overlay for depth ────────────────────────── */
+.grid-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+/* ── Typewriter cursor blink ──────────────────────────────── */
+@keyframes cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}

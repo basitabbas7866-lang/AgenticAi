@@ -1,0 +1,3 @@
+{
+  "conversation": "Patient has fever for 3 days, headache and body pain."
+}
