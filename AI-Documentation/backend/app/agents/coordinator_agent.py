@@ -12,6 +12,8 @@ from app.agents.referral_agent import ReferralAgent
 from app.agents.investigation_agent import InvestigationAgent
 from app.agents.followup_agent import FollowUpAgent
 from app.agents.summary_agent import SummaryAgent
+from app.models.consultation import Consultation
+from app.services.coordination_monitor import detect_coordination_issues
 
 logger = logging.getLogger("coordination_agents")
 
@@ -23,9 +25,14 @@ class PatientJourneyCoordinatorAgent:
         self.followup_agent = FollowUpAgent()
         self.summary_agent = SummaryAgent()
 
-    def run_analysis(self, db: Session, patient_id: str) -> dict:
+    def run_analysis(self, db: Session, patient_id: str, auth_token: str | None = None) -> dict:
         logger.info(f"[PatientJourneyCoordinatorAgent] Starting multi-agent analysis for patient {patient_id}")
         
+        # 0. Authorization check
+        if auth_token != "clinical-workspace-token":
+            logger.error("[PatientJourneyCoordinatorAgent] Unauthorized access block triggered.")
+            return {"error": "Unauthorized access"}
+
         # 1. Fetch Patient Info
         patient = db.query(Patient).filter(Patient.patient_id == patient_id).first()
         if not patient:
@@ -45,6 +52,7 @@ class PatientJourneyCoordinatorAgent:
         referrals = db.query(Referral).filter(Referral.patient_id == patient_id).all()
         investigations = db.query(Investigation).filter(Investigation.patient_id == patient_id).all()
         events = db.query(JourneyEvent).filter(JourneyEvent.patient_id == patient_id).all()
+        consultations = db.query(Consultation).filter(Consultation.patient_id == patient_id).all()
         
         # Serialize lists
         appts_list = [{
@@ -86,12 +94,43 @@ class PatientJourneyCoordinatorAgent:
             "status": ev.status,
             "timestamp": ev.timestamp.isoformat()
         } for ev in events]
+
+        consultations_list = [{
+            "id": c.consultation_id,
+            "transcript": c.transcript[:400] if c.transcript else "",
+            "report": c.report[:800] if c.report else "",
+            "created_at": c.created_at.isoformat()
+        } for c in consultations]
         
+        # Fetch unresolved coordination issues/alerts
+        alerts = detect_coordination_issues(db, patient_id=patient_id)
+        
+        # RAG retrieval checks with exception safety
+        rag_history = ""
+        rag_session = ""
+        try:
+            from app.rag.retriever import retrieve_history
+            rag_history = retrieve_history("patient clinical background history diagnosis chronic conditions surgeries", patient_id)
+        except Exception as e:
+            logger.warning(f"[CoordinatorAgent] Chroma history retrieve failed or collection missing: {e}")
+            rag_history = "Patient history documents unavailable in RAG."
+
+        try:
+            from app.rag.retriever import retrieve_session_history
+            rag_session = retrieve_session_history("patient consultations SOAP notes transcripts latest reports", patient_id)
+        except Exception as e:
+            logger.warning(f"[CoordinatorAgent] Chroma session retrieve failed or collection missing: {e}")
+            rag_session = "Prior consultation SOAP notes and reports unavailable in RAG."
+
         all_records = {
             "appointments": appts_list,
             "referrals": refs_list,
             "investigations": invs_list,
-            "journey_events": events_list
+            "journey_events": events_list,
+            "consultations": consultations_list,
+            "coordination_alerts": alerts,
+            "rag_history": rag_history,
+            "rag_session": rag_session
         }
         
         # 3. Trigger Specialized Agents in parallel

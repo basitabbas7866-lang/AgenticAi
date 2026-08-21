@@ -1,58 +1,67 @@
-import { useRevealChildren } from "../../hooks/useReveal";
+import { FaHospital, FaClinicMedical, FaUsers } from "react-icons/fa";
 
 function Stats() {
-  const containerRef = useRevealChildren();
-
-  const stats = [
+  const highlights = [
     {
-      value: "70%",
-      label: "Less documentation time",
-      detail: "Spend more of each visit listening instead of typing.",
-      color: "from-lp-primary to-lp-cyan"
+      icon: <FaHospital />,
+      label: "Connected Health Facilities",
+      value: "2,572",
+      detail: "Hospitals & Clinics Integrated"
     },
     {
-      value: "24/7",
-      label: "AI note assistance",
-      detail: "Draft notes whenever your clinical team is working.",
-      color: "from-[#8b5cf6] to-lp-rose"
+      icon: <FaClinicMedical />,
+      label: "Online Consultations Today",
+      value: "2,779",
+      detail: "Live SOAP Notes Processed"
     },
     {
-      value: "4x",
-      label: "Faster report creation",
-      detail: "Move from transcript to structured output faster.",
-      color: "from-lp-emerald to-lp-cyan"
+      icon: <FaUsers />,
+      label: "Total Patient Journeys Managed",
+      value: "14,190,958",
+      detail: "Digital Records Created"
     }
   ];
 
   return (
-    <section className="relative py-20 bg-lp-bg">
-      {/* Top divider line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.07] to-transparent" />
+    <section className="py-12 bg-[#f5f7fa]">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-8">
+        {/* Section Heading */}
+        <div className="text-center mb-8">
+          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1a3b6e] tracking-wide inline-block border-b-2 border-[#1a7f8e] pb-1">
+            Highlights &amp; Network Statistics
+          </h2>
+        </div>
 
-      <div className="max-w-[1320px] mx-auto px-6" ref={containerRef}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {stats.map((stat, i) => (
+        {/* 3 ORS-Style White Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {highlights.map((item) => (
             <div
-              key={stat.label}
-              className={`lp-reveal lp-reveal-delay-${i + 1}
-                stat-top-bar relative overflow-hidden p-8 rounded-[20px]
-                border border-white/[0.07] bg-white/[0.03]
-                shadow-[0_8px_32px_rgba(0,0,0,0.2)]
-                hover:-translate-y-1.5 hover:border-lp-primary/20
-                hover:shadow-[0_20px_48px_rgba(0,0,0,0.3),0_0_40px_rgba(99,102,241,0.1)]
-                transition-all duration-400 cursor-default`}
+              key={item.label}
+              className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-shadow flex items-start gap-4"
             >
-              <h3
-                className={`font-display text-[2.8rem] font-extrabold tracking-tight mb-1
-                  bg-gradient-to-r ${stat.color} bg-clip-text`}
-                style={{ WebkitTextFillColor: "transparent" }}
-              >
-                {stat.value}
-              </h3>
-              <h4 className="text-lp-heading text-[1.05rem] font-bold mb-2">{stat.label}</h4>
-              <p className="text-lp-text-muted leading-relaxed text-sm">{stat.detail}</p>
+              <div className="w-14 h-14 rounded-lg bg-[#1a3b6e] text-amber-300 flex items-center justify-center text-2xl shrink-0 shadow-sm">
+                {item.icon}
+              </div>
+
+              <div className="flex flex-col text-left w-full">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  {item.label}
+                </span>
+                <span className="text-2xl sm:text-3xl font-serif font-extrabold text-[#1a3b6e] my-1">
+                  {item.value}
+                </span>
+                <div className="flex items-center justify-between text-[11px] text-[#1a7f8e] font-semibold border-t border-slate-100 pt-2 mt-1">
+                  <span>{item.detail}</span>
+                  <span className="text-[#2b6cb0] hover:underline cursor-pointer">More...</span>
+                </div>
+              </div>
             </div>
           ))}
+        </div>
+
+        {/* ORS Timestamp Bar */}
+        <div className="text-center mt-6 text-xs text-slate-500 font-medium">
+          Last Online System Sync : <span className="font-bold text-slate-700">{new Date().toLocaleDateString('en-GB')} Live Active</span>
         </div>
       </div>
     </section>

@@ -28,6 +28,10 @@ from app.routes.investigation import router as investigation_router
 from app.models.investigation import Investigation
 from app.routes.coordination import router as coordination_router
 from app.routes.agent_coordination import router as agent_coordination_router
+from app.routes.review import router as review_router
+from app.models.coordination_review import CoordinationReview
+from app.routes.auth import router as auth_router
+from app.models.user import User
 
 app = FastAPI(
     title="ClarityNote AI"
@@ -55,6 +59,8 @@ app.include_router(referral_router)
 app.include_router(investigation_router)
 app.include_router(coordination_router)
 app.include_router(agent_coordination_router)
+app.include_router(review_router)
+app.include_router(auth_router)
 
 from app.routes.transcribe import (
     router as transcribe_router

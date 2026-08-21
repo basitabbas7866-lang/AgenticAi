@@ -23,6 +23,7 @@ import { useAudioRecorder } from "../hooks/useAudioRecorder";
 import { initialPatientsList, initialConsultationsList } from "../components/dashboard/mockData";
 import PatientJourney from "../components/dashboard/PatientJourney";
 import AttentionRequired from "../components/dashboard/AttentionRequired";
+import CoordinationReviewQueue from "../components/dashboard/CoordinationReviewQueue";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -146,13 +147,28 @@ function DashboardPage() {
 
 
   return (
-    <div className="dashboard-page flex w-screen h-screen bg-[#0c1322]/80 backdrop-blur-md text-slate-100 font-sans select-none text-left relative overflow-hidden">
+    <div className="dashboard-page flex flex-col w-screen h-screen bg-[#f5f7fa] text-stone-800 font-sans select-none text-left relative overflow-hidden">
+      
+      {/* Top Navigation Bar (Matching Auth Page Theme) */}
+      <div className="w-full bg-[#1a3b6e] text-white py-2 px-6 flex items-center justify-between border-b border-[#00909e]/30 z-30 shrink-0">
+          <div className="flex items-center gap-2">
+              <img src="/logo.jpg" alt="CareWeave Logo" className="h-8 w-auto object-contain bg-white px-2 py-0.5 rounded" />
+              <span className="text-xs font-bold text-amber-300 hidden sm:inline">| Clinical Workstation Portal</span>
+          </div>
+          <button
+              onClick={() => navigate("/")}
+              className="text-xs font-bold bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-full transition-all border border-white/20 cursor-pointer flex items-center gap-1.5"
+          >
+              Exit Workstation &rarr;
+          </button>
+      </div>
 
-      {/* Background Mesh Orbs */}
-      <BackgroundOrbs />
+      <div className="flex flex-1 h-full overflow-hidden relative">
+        {/* Background Mesh Orbs */}
+        <BackgroundOrbs />
 
-      {/* Sidebar - Navigation Overlays */}
-      <div className="hidden md:flex w-64 h-full shrink-0 border-r border-slate-900/60 z-20">
+        {/* Sidebar - Navigation Overlays */}
+        <div className="hidden md:flex w-64 h-full shrink-0 border-r border-slate-200 z-20 bg-white">
         <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
@@ -168,7 +184,29 @@ function DashboardPage() {
       </AnimatePresence>
 
       {/* Right Core Workspace Station viewport container */}
-      <div className="flex-1 h-full overflow-hidden flex flex-col relative z-10">
+      <div className="flex-1 h-full overflow-hidden flex flex-col relative z-10 bg-[#f5f7fa]">
+
+        {/* Professional Mesh Grid Background Overlay */}
+        <div 
+          className="absolute inset-0 z-0 opacity-[0.3] pointer-events-none"
+          style={{
+            backgroundImage: "linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)",
+            backgroundSize: "40px 40px"
+          }}
+        />
+
+        {/* Dynamic Background Banner based on active tab */}
+        <div className="absolute top-0 left-0 w-full h-80 z-0 opacity-[0.35] transition-colors duration-700 pointer-events-none"
+             style={{
+               background: 
+                 activeTab === "dashboard" ? "linear-gradient(to bottom, #1a3b6e2a, transparent)" :
+                 activeTab === "patients"  ? "linear-gradient(to bottom, #1a7f8e2a, transparent)" :
+                 activeTab === "reports"   ? "linear-gradient(to bottom, #e8a0202a, transparent)" :
+                 activeTab === "journey"   ? "linear-gradient(to bottom, #2b6cb02a, transparent)" :
+                 activeTab === "reviews"   ? "linear-gradient(to bottom, #0596692a, transparent)" :
+                 "transparent"
+             }}
+        />
 
         {/* Mobile Header Bar Component */}
         <MobileHeader onOpenSidebar={() => setIsSidebarOpen(true)} />
@@ -261,7 +299,14 @@ function DashboardPage() {
             </motion.div>
           )}
 
+          {activeTab === "reviews" && (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+              <CoordinationReviewQueue />
+            </motion.div>
+          )}
+
         </div>
+      </div>
       </div>
     </div>
   );

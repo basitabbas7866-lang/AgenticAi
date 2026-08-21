@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   FaExclamationTriangle, 
   FaClock, 
-  FaArrowRight, 
   FaChevronRight, 
   FaCheckCircle 
 } from "react-icons/fa";
@@ -46,52 +45,50 @@ function AttentionRequired({ onSelectPatient, onNavigateToTab }) {
     switch (severity?.toLowerCase() || severity) {
       case "critical":
         return {
-          bg: "bg-rose-500/10",
-          border: "border-rose-500/30",
-          text: "text-rose-400",
-          dot: "bg-rose-500 animate-pulse"
+          bg: "bg-red-50",
+          border: "border-red-200",
+          text: "text-red-600",
+          dot: "bg-red-500 animate-pulse"
         };
       case "high":
         return {
-          bg: "bg-amber-500/10",
-          border: "border-amber-500/30",
-          text: "text-amber-400",
+          bg: "bg-amber-50",
+          border: "border-amber-200",
+          text: "text-amber-600",
           dot: "bg-amber-500 animate-pulse"
         };
       case "medium":
       default:
         return {
-          bg: "bg-sky-500/10",
-          border: "border-sky-500/30",
-          text: "text-sky-400",
-          dot: "bg-sky-500"
+          bg: "bg-blue-50",
+          border: "border-blue-200",
+          text: "text-blue-600",
+          dot: "bg-blue-500"
         };
     }
   };
 
   const handleCoordinate = (patientId, patientName) => {
-    // Mimic selecting the patient in the dashboard
     onSelectPatient({
       patient_id: patientId,
       name: patientName
     });
-    // Direct staff to Care Journey workspace
     onNavigateToTab("journey");
   };
 
   return (
-    <div className="glass-panel border border-[#1e2d4a]/60 rounded-[20px] p-6 bg-slate-950/20 text-left relative overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-900 pb-4 mb-6">
+    <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm text-left relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
         <div>
-          <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider">Administrative Layer</span>
-          <h3 className="text-white text-base font-black leading-tight mt-1 flex items-center gap-2">
-            <FaExclamationTriangle className="text-rose-500 text-xs shrink-0" />
+          <span className="text-[10px] text-red-600 font-extrabold uppercase tracking-wider">Administrative Layer</span>
+          <h3 className="text-[#1a3b6e] text-base font-extrabold leading-tight mt-1 flex items-center gap-2">
+            <FaExclamationTriangle className="text-red-500 text-sm shrink-0 animate-bounce" />
             <span>Clinical Coordination Alerts</span>
           </h3>
         </div>
         <button
           onClick={fetchAlerts}
-          className="px-3.5 py-1.5 rounded-xl text-[10px] font-extrabold uppercase tracking-wider bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer"
+          className="px-4 py-2 rounded-full text-xs font-bold bg-[#1a3b6e] text-white hover:bg-[#15305b] shadow-sm hover:shadow transition-all cursor-pointer border-none"
         >
           Scan Active Records
         </button>
@@ -99,17 +96,17 @@ function AttentionRequired({ onSelectPatient, onNavigateToTab }) {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12 text-slate-500">
-          <FaClock className="text-2xl animate-spin mb-3 text-sky-400" />
+          <FaClock className="text-2xl animate-spin mb-3 text-[#1a7f8e]" />
           <span className="text-[10px] uppercase font-bold tracking-wider">Scanning coordination data...</span>
         </div>
       ) : alerts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-center space-y-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center border border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-400">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center border border-emerald-200 bg-emerald-50 text-[#2eb37e]">
             <FaCheckCircle className="text-lg" />
           </div>
           <div>
-            <h4 className="text-white text-xs font-bold uppercase">All Records Synced</h4>
-            <p className="text-slate-500 text-[10px] mt-1 max-w-sm">
+            <h4 className="text-[#1a3b6e] text-xs font-extrabold uppercase">All Records Synced</h4>
+            <p className="text-slate-500 text-xs mt-1 max-w-sm">
               All appointments, referrals, and lab tests are currently coordinated within administrative limits.
             </p>
           </div>
@@ -124,13 +121,18 @@ function AttentionRequired({ onSelectPatient, onNavigateToTab }) {
           <AnimatePresence mode="popLayout">
             {alerts.map((alert, idx) => {
               const styles = getSeverityStyles(alert.severity);
+              const borderTopClass = alert.severity?.toLowerCase() === 'critical' 
+                ? 'border-t-4 border-t-red-500' 
+                : alert.severity?.toLowerCase() === 'high' 
+                  ? 'border-t-4 border-t-[#e8a020]' 
+                  : 'border-t-4 border-t-[#2b6cb0]';
               
               return (
                 <motion.div
                   key={`${alert.patient_id}-${alert.issue_type}-${idx}`}
                   variants={itemVariants}
                   layout
-                  className="glass-panel border border-[#1e2d4a]/30 rounded-xl p-4 bg-slate-950/40 hover:border-slate-800 transition-all flex flex-col justify-between group/card relative overflow-hidden"
+                  className={`bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:border-[#1a7f8e]/30 hover:shadow-md transition-all flex flex-col justify-between group/card relative overflow-hidden text-left ${borderTopClass}`}
                 >
                   <div>
                     {/* Badge header */}
@@ -141,37 +143,37 @@ function AttentionRequired({ onSelectPatient, onNavigateToTab }) {
                           {alert.severity} Alert
                         </span>
                       </div>
-                      <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">{alert.issue_type.replace("_", " ")}</span>
+                      <span className="text-[9px] font-mono text-slate-400 font-bold uppercase tracking-wider">{alert.issue_type.replace("_", " ")}</span>
                     </div>
 
                     {/* Patient Context */}
                     <div className="mt-3">
                       <span className="text-[10px] text-slate-500 font-bold uppercase">Patient</span>
-                      <h4 className="text-white text-xs font-black leading-snug mt-0.5">{alert.patient_name} ({alert.patient_id})</h4>
+                      <h4 className="text-[#1a3b6e] text-xs font-extrabold leading-snug mt-0.5">{alert.patient_name} ({alert.patient_id})</h4>
                     </div>
 
                     {/* Explanation */}
-                    <p className="text-slate-300 text-xs mt-3 leading-relaxed font-medium">
+                    <p className="text-slate-600 text-xs mt-3 leading-relaxed font-semibold">
                       {alert.explanation}
                     </p>
 
                     {/* Recommended Next Step */}
-                    <div className="mt-3 p-2.5 rounded-lg bg-[#070b13]/60 border border-slate-900/60 flex items-start gap-2">
-                      <span className="text-[8px] font-bold text-sky-400 uppercase tracking-wider mt-0.5 shrink-0">Plan:</span>
-                      <p className="text-slate-400 text-[10px] leading-normal font-semibold">
+                    <div className="mt-3 p-2.5 rounded-lg bg-slate-50 border border-slate-200 flex items-start gap-2">
+                      <span className="text-[9px] font-extrabold text-[#1a7f8e] uppercase tracking-wider mt-0.5 shrink-0">Plan:</span>
+                      <p className="text-slate-600 text-[10px] leading-normal font-semibold m-0">
                         {alert.recommended_action}
                       </p>
                     </div>
                   </div>
 
                   {/* Deep link coordinator action button */}
-                  <div className="mt-4 pt-3 border-t border-slate-900/50 flex justify-end">
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex justify-end">
                     <button
                       onClick={() => handleCoordinate(alert.patient_id, alert.patient_name)}
-                      className="flex items-center gap-1 text-[10px] font-extrabold text-sky-400 hover:text-white uppercase tracking-wider transition-colors cursor-pointer group-hover/card:translate-x-1 duration-300"
+                      className="flex items-center gap-1 text-[10px] font-extrabold text-[#1a7f8e] hover:text-[#1a3b6e] uppercase tracking-wider transition-colors cursor-pointer group-hover/card:translate-x-1 duration-300 border-none bg-transparent"
                     >
                       <span>Coordinate Care</span>
-                      <FaChevronRight className="text-[8px] transition-transform" />
+                      <FaChevronRight className="text-[8px]" />
                     </button>
                   </div>
                 </motion.div>

@@ -37,23 +37,25 @@ function TranscriptReview({
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="glass-panel border border-[#1e2d4a]/60 rounded-[20px] p-5 lg:col-span-6 flex flex-col gap-3 shadow-xl">
-          <span className="text-white text-xs font-black uppercase tracking-wider border-b border-[#1e2d4a]/60 pb-2">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 text-left">
+        {/* Left Column: Source Transcript Editor */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 lg:col-span-6 flex flex-col gap-3 shadow-sm">
+          <span className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider border-b border-slate-100 pb-2">
             Source Transcript Editor
           </span>
           <textarea
             value={conversation}
             onChange={(e) => setConversation(e.target.value)}
-            className="w-full h-80 p-3.5 rounded-xl bg-[#0c1322] border border-[#1e2d4a] text-slate-300 text-xs outline-none focus:border-teal-500/30 transition-all font-mono resize-none leading-relaxed"
+            className="w-full h-80 p-3.5 rounded-xl bg-white border border-slate-300 text-slate-700 text-xs outline-none focus:border-[#1a7f8e] focus:ring-2 focus:ring-[#1a7f8e]/20 transition-all font-mono resize-none leading-relaxed"
           />
         </div>
 
-        <div className="glass-panel border border-[#1e2d4a]/60 rounded-[20px] p-5 lg:col-span-6 flex flex-col gap-3 shadow-xl bg-[#0c1322]/10">
-          <span className="text-white text-xs font-black uppercase tracking-wider border-b border-[#1e2d4a]/60 pb-2">
-            Aura Patient-Doctor dialogue
+        {/* Right Column: Aura Patient-Doctor dialogue bubbles */}
+        <div className="bg-white border border-slate-200 rounded-xl p-5 lg:col-span-6 flex flex-col gap-3 shadow-sm">
+          <span className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider border-b border-slate-100 pb-2">
+            Patient-Doctor Dialogue Streams
           </span>
-          <div className="w-full h-80 overflow-y-auto no-scrollbar flex flex-col gap-3.5 p-1.5 bg-[#0c1322]/20 border border-[#1e2d4a] rounded-xl">
+          <div className="w-full h-80 overflow-y-auto no-scrollbar flex flex-col gap-3.5 p-3 bg-slate-50 border border-slate-200 rounded-xl shadow-inner">
             {chatBubbles.length > 0 ? (
               chatBubbles.map((bubble, i) => {
                 const isDoc = bubble.speaker === "doctor";
@@ -65,13 +67,13 @@ function TranscriptReview({
                     className={`flex ${isDoc ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[85%] rounded-[20px] px-4 py-2.5 text-xs ${
+                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-xs text-left ${
                         isDoc
-                          ? "bg-teal-600 text-white rounded-tr-none shadow-[0_3px_6px_rgba(20,184,166,0.15)]"
-                          : "bg-[#27354f] text-slate-200 rounded-tl-none shadow-[0_3px_6px_rgba(0,0,0,0.1)]"
+                          ? "bg-[#1a3b6e] text-white rounded-tr-none shadow-sm"
+                          : "bg-white text-slate-800 rounded-tl-none border border-slate-200 shadow-sm"
                       }`}
                     >
-                      <span className="block text-[8px] font-bold uppercase tracking-wider mb-1 opacity-75">
+                      <span className={`block text-[8px] font-extrabold uppercase tracking-wider mb-1 ${isDoc ? "text-amber-300" : "text-[#1a7f8e]"}`}>
                         {isDoc ? "Dr. Sarah Jenkins" : "Patient"}
                       </span>
                       <p className="font-mono m-0 leading-relaxed break-words">{bubble.text}</p>
@@ -80,7 +82,7 @@ function TranscriptReview({
                 );
               })
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-slate-600">
+              <div className="w-full h-full flex flex-col items-center justify-center text-slate-400">
                 <span className="text-[10px] font-bold uppercase tracking-wider">Dialogue Bubbles Ready</span>
               </div>
             )}
@@ -96,10 +98,10 @@ function TranscriptReview({
                 state: { patient: patient || recentPatients[0], conversation, language }
               })
             }
-            className="btn-3d-primary flex items-center justify-center gap-2.5 h-12 px-10 text-xs font-bold text-white shadow-xl transition-all"
+            className="bg-gradient-to-r from-[#e8a020] to-[#f3b236] hover:from-[#d49018] hover:to-[#e8a020] text-[#1a3b6e] font-extrabold text-xs h-12 px-10 rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-2 active:scale-95"
           >
             <span>Continue to SOAP Generation</span>
-            <FaArrowRight className="text-[10px] transition-transform duration-300 hover:translate-x-1" />
+            <FaArrowRight className="text-xs" />
           </button>
         </div>
       )}

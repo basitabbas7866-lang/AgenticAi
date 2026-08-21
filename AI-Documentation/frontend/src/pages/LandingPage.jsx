@@ -12,7 +12,7 @@ function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <main className="landing-page w-full min-h-screen overflow-x-hidden bg-lp-bg backdrop-blur-sm text-lp-text font-body antialiased text-left">
+    <main className="landing-page w-full min-h-screen overflow-x-hidden bg-white/5 text-stone-800 font-body antialiased text-left">
       <Navbar onEnterApp={() => navigate("/auth")} />
       <Hero onEnterApp={() => navigate("/auth")} />
       <Stats />

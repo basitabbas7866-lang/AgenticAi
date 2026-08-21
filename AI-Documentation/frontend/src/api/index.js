@@ -172,5 +172,39 @@ export const analyzePatientCoordination = async (patientId) => {
   return response;
 };
 
+export const getReviews = async () => {
+  const response = await apiClient.get("/coordination/reviews");
+  return response;
+};
+
+export const getPatientReviews = async (patientId) => {
+  const response = await apiClient.get(`/patient/${patientId}/coordination/reviews`);
+  return response;
+};
+
+export const takeReviewAction = async (reviewId, decision, reviewer, comment) => {
+  const response = await apiClient.post(`/coordination/reviews/${reviewId}/action`, {
+    decision,
+    reviewer,
+    comment
+  });
+  return response;
+};
+
+export const syncReviews = async () => {
+  const response = await apiClient.post("/coordination/reviews/sync");
+  return response;
+};
+
+export const loginUser = async (email, password, role) => {
+  const response = await apiClient.post("/auth/login", { email, password, role });
+  return response;
+};
+
+export const registerUser = async (name, email, password, role, specialty = null) => {
+  const response = await apiClient.post("/auth/register", { name, email, password, role, specialty });
+  return response;
+};
+
 export default apiClient;
 

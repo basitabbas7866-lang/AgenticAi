@@ -189,7 +189,7 @@ function SoapGenerationPage() {
         });
       };
       if (isBold) {
-        return <strong key={i} className="text-white font-bold">{parseItalicAndUnderline(part)}</strong>;
+        return <strong key={i} className="text-[#1a3b6e] font-bold">{parseItalicAndUnderline(part)}</strong>;
       }
       return <span key={i}>{parseItalicAndUnderline(part)}</span>;
     });
@@ -202,7 +202,7 @@ function SoapGenerationPage() {
 
     const lines = text.split("\n");
     return (
-      <div className="flex flex-col gap-2 text-xs text-slate-300 font-sans leading-relaxed select-text">
+      <div className="flex flex-col gap-2 text-xs text-slate-700 font-sans leading-relaxed select-text">
         {lines.map((line, idx) => {
           const trimmed = line.trim();
           if (!trimmed) return null;
@@ -212,10 +212,10 @@ function SoapGenerationPage() {
           if (numMatch) {
             return (
               <div key={idx} className="flex items-start gap-2.5 pl-2 mt-1">
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-teal-500/10 text-teal-400 font-mono text-[10px] font-bold shrink-0 mt-0.5">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[#1a7f8e]/10 text-[#1a7f8e] font-mono text-[10px] font-bold shrink-0 mt-0.5">
                   {numMatch[1]}
                 </span>
-                <span className="text-slate-300">{parseInlineMarkdown(numMatch[2])}</span>
+                <span className="text-slate-700">{parseInlineMarkdown(numMatch[2])}</span>
               </div>
             );
           }
@@ -225,8 +225,8 @@ function SoapGenerationPage() {
             const content = trimmed.replace(/^[-*•]\s*/, "");
             return (
               <div key={idx} className="flex items-start gap-2.5 pl-2 mt-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0 mt-2" />
-                <span className="text-slate-300">{parseInlineMarkdown(content)}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#1a7f8e] shrink-0 mt-2" />
+                <span className="text-slate-700">{parseInlineMarkdown(content)}</span>
               </div>
             );
           }
@@ -339,12 +339,12 @@ function SoapGenerationPage() {
               : "bg-amber-500";
 
           return (
-            <div key={i} className="bg-[#0c1322] border border-[#1e2d4a]/70 rounded-xl p-3 flex flex-col gap-2">
+            <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col gap-2">
               <div className="flex justify-between items-center text-xs font-semibold">
-                <span className="text-slate-200">{diag.name}</span>
-                <span className="text-slate-400 font-mono text-[10px]">{percent}% confidence</span>
+                <span className="text-slate-700">{diag.name}</span>
+                <span className="text-slate-500 font-mono text-[10px] font-bold">{percent}% confidence</span>
               </div>
-              <div className="w-full h-1.5 bg-[#172237] rounded-full overflow-hidden">
+              <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
                 <div 
                   className={`h-full ${colorClass} rounded-full transition-all duration-700`}
                   style={{ width: `${percent}%` }}
@@ -968,32 +968,26 @@ function SoapGenerationPage() {
     printWindow.document.close();
     setDownloading(false);
   };
-
   return (
-    <div className="w-full min-h-screen overflow-x-hidden bg-[#0c1322]/80 backdrop-blur-md text-slate-100 font-sans select-none text-left flex flex-col pb-12 soap-generation-page">
+    <div className="w-full min-h-screen overflow-x-hidden bg-[#f5f7fa] text-stone-800 font-sans select-none text-left flex flex-col pb-12 soap-generation-page">
       
       {/* 1. Header Navigation */}
-      <header className="w-full h-16 border-b border-[#1e2d4a] bg-[#0c1322]/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-50">
+      <header className="w-full h-16 border-b border-slate-200 bg-white flex items-center justify-between px-8 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-6">
           {/* Logo */}
           <div 
             onClick={() => navigate("/dashboard")} 
-            className="flex items-center text-white no-underline tracking-tight cursor-pointer"
+            className="flex items-center no-underline tracking-tight cursor-pointer"
           >
-            <div className="relative flex w-8 h-8 items-center justify-center rounded-lg bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-500 shadow-md">
-              <span className="font-sans font-black text-white text-xs">C</span>
-            </div>
-            <span className="tracking-wide font-bold ml-2.5 text-sm text-white">
-              ClarityNote <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400 font-medium">AI</span>
-            </span>
+            <img src="/logo.jpg" alt="CareWeave Logo" className="h-8 w-auto object-contain" />
           </div>
           <span className="text-slate-700 text-sm">|</span>
-          <span className="text-xs text-teal-400 font-bold uppercase tracking-wider">SOAP Note Workshop</span>
+          <span className="text-xs text-teal-600 font-bold uppercase tracking-wider">SOAP Note Workshop</span>
         </div>
 
         <button 
           onClick={() => navigate("/dashboard")}
-          className="btn-3d-secondary px-4 py-1.5 text-xs flex items-center gap-2"
+          className="px-4 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-full cursor-pointer flex items-center gap-2"
         >
           <FaArrowLeft className="text-[10px]" />
           <span>Dashboard</span>
@@ -1002,19 +996,19 @@ function SoapGenerationPage() {
 
       {/* 2. Patient Header Banner */}
       <div className="w-full px-8 mt-6">
-        <div className="glass-panel border border-[#1e2d4a]/60 rounded-[20px] p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-2xl relative overflow-hidden bg-[#172237]">
+        <div className="bg-white border border-slate-200 rounded-xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm relative overflow-hidden text-left">
           {/* Background Glows */}
-          <div className="absolute -top-[50%] -left-[10%] w-[40%] h-[200%] bg-teal-500/[0.04] rounded-full blur-[80px] pointer-events-none" />
-          <div className="absolute -bottom-[50%] -right-[10%] w-[40%] h-[200%] bg-cyan-500/[0.04] rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -top-[50%] -left-[10%] w-[40%] h-[200%] bg-[#1a7f8e]/[0.02] rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute -bottom-[50%] -right-[10%] w-[40%] h-[200%] bg-[#2b6cb0]/[0.02] rounded-full blur-[80px] pointer-events-none" />
 
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-[14px] bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 shrink-0">
+            <div className="w-12 h-12 rounded-[14px] bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
               <FaUser className="text-lg" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-white text-xl font-black m-0 leading-none">{patient.name}</h1>
-                <span className="text-[10px] bg-teal-500/15 border border-teal-500/25 px-2 py-0.5 rounded font-mono text-teal-400 font-bold uppercase tracking-wider">
+                <h1 className="text-[#1a3b6e] text-xl font-extrabold m-0 leading-none">{patient.name}</h1>
+                <span className="text-[10px] bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 px-2 py-0.5 rounded font-mono text-[#1a7f8e] font-extrabold uppercase tracking-wider">
                   {patient.patient_id}
                 </span>
               </div>
@@ -1037,14 +1031,14 @@ function SoapGenerationPage() {
             </div>
           </div>
 
-          <div className="flex flex-col text-right items-end border-t border-[#1e2d4a] md:border-t-0 pt-4 md:pt-0">
+          <div className="flex flex-col text-right items-end border-t border-slate-100 md:border-t-0 pt-4 md:pt-0">
             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Consultation Date</span>
-            <span className="text-sm text-white font-bold mt-1 font-mono">
+            <span className="text-sm text-[#1a3b6e] font-bold mt-1 font-mono">
               {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
             </span>
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 mt-2 rounded bg-emerald-500/10 border border-emerald-500/15">
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 mt-2 rounded bg-emerald-50 border border-emerald-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[9px] text-emerald-400 font-bold uppercase">Ready to Review</span>
+              <span className="text-[9px] text-emerald-600 font-extrabold uppercase">Ready to Review</span>
             </div>
           </div>
         </div>
@@ -1054,15 +1048,15 @@ function SoapGenerationPage() {
         
         {/* Left Column: Summary & Source Transcript (xl:span-4) */}
         <section className="xl:col-span-4 flex flex-col gap-6">
-          <div className="glass-panel border border-[#1e2d4a]/60 rounded-[20px] p-5 flex flex-col gap-4 shadow-xl">
-            <div className="flex items-center gap-2 border-b border-[#1e2d4a]/60 pb-3">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-4 shadow-sm text-left">
+            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <FaFileAlt className="text-teal-400 text-xs" />
-              <h2 className="text-white text-xs font-black uppercase tracking-wider m-0">Source Conversation</h2>
+              <h2 className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider m-0">Source Conversation</h2>
             </div>
             
             <div className="flex flex-col gap-1">
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Ambient Conversation Transcript</span>
-              <div className="w-full h-[580px] p-4 rounded-xl bg-[#0c1322] border border-[#1e2d4a] text-slate-300 text-xs outline-none overflow-y-auto leading-relaxed font-mono whitespace-pre-wrap select-text pr-1">
+              <div className="w-full h-[580px] p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs outline-none overflow-y-auto leading-relaxed font-mono whitespace-pre-wrap select-text pr-1">
                 {conversation}
               </div>
             </div>
@@ -1070,7 +1064,7 @@ function SoapGenerationPage() {
             {language && (
               <div className="flex items-center gap-1.5 text-xs text-teal-400 font-semibold px-1">
                 <span className="text-slate-500">Audio Language:</span>
-                <span className="text-white font-mono uppercase bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded text-[10px]">
+                <span className="text-[#1a7f8e] font-mono uppercase bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 px-2 py-0.5 rounded text-[10px] font-bold">
                   {language}
                 </span>
               </div>
@@ -1080,11 +1074,11 @@ function SoapGenerationPage() {
 
         {/* Right Column: Unified SOAP Document Editor (xl:span-8) */}
         <section className="xl:col-span-8 flex flex-col gap-6">
-          <div className="glass-panel border border-[#1e2d4a]/60 rounded-[20px] p-5 flex flex-col gap-5 shadow-xl relative min-h-[500px]">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-5 shadow-sm relative min-h-[500px] text-left">
             
             {/* Step 8 Checklist Loader Overlay */}
             {loading && (
-              <div className="absolute inset-0 bg-[#0c1322]/95 rounded-[20px] flex flex-col items-center justify-center gap-6 z-30 backdrop-blur-md p-8 text-center">
+              <div className="absolute inset-0 bg-white/95 rounded-xl flex flex-col items-center justify-center gap-6 z-30 backdrop-blur-sm p-8 text-center">
                 <div className="relative w-14 h-14 flex items-center justify-center">
                   <div className="absolute inset-0 rounded-full border-4 border-teal-500/20 animate-spin border-t-teal-500" />
                   <span className="text-teal-400 font-bold text-xs">AI</span>
@@ -1095,7 +1089,7 @@ function SoapGenerationPage() {
                   <p className="text-slate-400 text-xs">ClarityNote AI agents are generating your structured clinical note.</p>
                 </div>
 
-                <div className="w-full max-w-xs bg-[#131d30] border border-[#1e2d4a] rounded-xl p-4 flex flex-col gap-3 text-left">
+                <div className="w-full max-w-xs bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 text-left">
                   <div className="flex items-center justify-between">
                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Clinical pipeline status</span>
                     <span className="text-[9px] text-teal-400 font-bold uppercase font-mono">Running</span>
@@ -1103,43 +1097,43 @@ function SoapGenerationPage() {
                   
                   <div className="flex flex-col gap-2.5 mt-1">
                     <div className="flex items-center gap-2.5 text-xs">
-                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+                      <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-50 text-emerald-600 font-bold border border-emerald-200">
                         ✓
                       </span>
-                      <span className="text-slate-200">Transcription Complete</span>
+                      <span className="text-slate-700">Transcription Complete</span>
                     </div>
 
                     <div className="flex items-center gap-2.5 text-xs">
                       {loadingStep >= 1 ? (
-                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-50 text-emerald-600 font-bold border border-emerald-200">
                           ✓
                         </span>
                       ) : (
-                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-teal-500/10 text-teal-400 border border-teal-500/20 animate-pulse" />
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-[#1a7f8e]/10 text-[#1a7f8e] border border-[#1a7f8e]/20 animate-pulse" />
                       )}
-                      <span className={loadingStep >= 1 ? "text-slate-200" : "text-slate-500"}>Retrieving Patient History</span>
+                      <span className={loadingStep >= 1 ? "text-slate-700" : "text-slate-500"}>Retrieving Patient History</span>
                     </div>
 
                     <div className="flex items-center gap-2.5 text-xs">
                       {loadingStep >= 2 ? (
-                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-50 text-emerald-600 font-bold border border-emerald-200">
                           ✓
                         </span>
                       ) : (
-                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-teal-500/10 text-teal-400 border border-teal-500/20" />
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-[#1a7f8e]/10 text-[#1a7f8e] border border-[#1a7f8e]/20" />
                       )}
-                      <span className={loadingStep >= 2 ? "text-slate-200" : "text-slate-500"}>Generating SOAP Note</span>
+                      <span className={loadingStep >= 2 ? "text-slate-700" : "text-slate-500"}>Generating SOAP Note</span>
                     </div>
 
                     <div className="flex items-center gap-2.5 text-xs">
                       {loadingStep >= 3 ? (
-                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-emerald-50 text-emerald-600 font-bold border border-emerald-200">
                           ✓
                         </span>
                       ) : (
-                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-teal-500/10 text-teal-400 border border-teal-500/20" />
+                        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] bg-[#1a7f8e]/10 text-[#1a7f8e] border border-[#1a7f8e]/20" />
                       )}
-                      <span className={loadingStep >= 3 ? "text-slate-200" : "text-slate-500"}>Validating Output</span>
+                      <span className={loadingStep >= 3 ? "text-slate-700" : "text-slate-500"}>Validating Output</span>
                     </div>
                   </div>
                 </div>
@@ -1150,20 +1144,20 @@ function SoapGenerationPage() {
             {showSaveSuccess ? (
               <div className="flex flex-col gap-6 justify-center py-6 min-h-[500px]">
                 <div className="flex flex-col items-center text-center gap-3">
-                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/10">
+                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-sm">
                     <FaCheck className="text-2xl" />
                   </div>
                   <div className="space-y-1">
                     <h3 className="text-white text-base font-black uppercase tracking-wider">Session Saved!</h3>
-                    <p className="text-emerald-400 text-xs font-semibold">Consultation saved successfully to database.</p>
+                    <p className="text-[#2eb37e] text-xs font-semibold">Consultation saved successfully to database.</p>
                   </div>
                 </div>
 
                 {/* Patient History Updated Status Indicator */}
-                <div className="bg-[#131d30] border border-[#1e2d4a] rounded-xl p-5 flex flex-col gap-4 text-left">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col gap-4 text-left">
                   <div className="flex justify-between items-center pb-2 border-b border-[#1e2d4a]">
                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Patient History Updated</span>
-                    <span className="text-[9px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/15 px-2 py-0.5 rounded font-mono uppercase">New Entry Locked</span>
+                    <span className="text-[9px] text-[#2eb37e] bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded font-mono uppercase">New Entry Locked</span>
                   </div>
                   <div className="flex flex-col gap-1.5 text-xs">
                     <p className="m-0 text-slate-300 font-bold">{patient.name}</p>
@@ -1172,9 +1166,9 @@ function SoapGenerationPage() {
                 </div>
 
                 {/* Send PDF to WhatsApp simulation */}
-                <div className="bg-[#131d30] border border-[#1e2d4a] rounded-xl p-5 flex flex-col gap-4 text-left">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col gap-4 text-left">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/15 flex items-center justify-center text-emerald-400">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#2eb37e]">
                       <FaWhatsapp className="text-lg" />
                     </div>
                     <div>
@@ -1184,8 +1178,8 @@ function SoapGenerationPage() {
                   </div>
 
                   {whatsappSent ? (
-                    <div className="flex items-center gap-2.5 p-3 bg-emerald-500/10 border border-emerald-500/15 rounded-lg text-emerald-400 text-xs font-semibold">
-                      <FaCheckCircle className="text-emerald-400 shrink-0 text-sm" />
+                    <div className="flex items-center gap-2.5 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-[#2eb37e] text-xs font-semibold">
+                      <FaCheckCircle className="text-[#2eb37e] shrink-0 text-sm" />
                       <span>Clinical note (PDF) sent successfully to {whatsappNumber}</span>
                     </div>
                   ) : (
@@ -1194,12 +1188,12 @@ function SoapGenerationPage() {
                         value={whatsappNumber}
                         onChange={(e) => setWhatsappNumber(e.target.value)}
                         placeholder="WhatsApp Number..."
-                        className="flex-1 h-9 px-3 rounded-lg bg-[#0c1322] border border-[#1e2d4a] text-white text-xs outline-none focus:border-teal-500/40 font-medium font-mono"
+                        className="flex-1 h-9 px-3 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs outline-none focus:border-[#1a7f8e] font-semibold font-mono"
                       />
                       <button
                         onClick={handleSendWhatsapp}
                         disabled={sendingWhatsapp}
-                        className="btn-3d-primary h-9 px-4 text-xs font-bold shrink-0 flex items-center gap-1.5 animate-pulse"
+                        className="px-4 h-9 bg-gradient-to-r from-[#e8a020] to-[#f3b236] text-[#1a3b6e] font-extrabold text-xs rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow shrink-0 flex items-center gap-1.5 animate-pulse"
                       >
                         {sendingWhatsapp ? (
                           <>
@@ -1222,13 +1216,13 @@ function SoapGenerationPage() {
                     onClick={() => {
                       navigate("/dashboard", { state: { activeTab: "reports" } });
                     }}
-                    className="btn-3d-secondary h-10 px-5 text-xs font-bold"
+                    className="px-5 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-full cursor-pointer"
                   >
                     Go to Patient History
                   </button>
                   <button
                     onClick={() => navigate("/dashboard")}
-                    className="btn-3d-primary h-10 px-5 text-xs font-bold"
+                    className="px-5 h-10 bg-gradient-to-r from-[#e8a020] to-[#f3b236] text-[#1a3b6e] font-extrabold text-xs rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow"
                   >
                     Back to Dashboard
                   </button>
@@ -1238,7 +1232,7 @@ function SoapGenerationPage() {
               /* Step 13: Approve & Finalize Panel */
               <div className="flex flex-col gap-6 justify-center py-6 min-h-[500px]">
                 <div className="flex flex-col items-center text-center gap-3 animate-fade-in">
-                  <div className="w-14 h-14 rounded-full bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 shadow-lg shadow-teal-500/5">
+                  <div className="w-14 h-14 rounded-full bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shadow-sm">
                     <FaCheck className="text-lg" />
                   </div>
                   <div className="space-y-1">
@@ -1247,8 +1241,8 @@ function SoapGenerationPage() {
                   </div>
                 </div>
 
-                <div className="bg-[#131d30] border border-[#1e2d4a] rounded-xl p-5 flex flex-col gap-4 text-left">
-                  <div className="flex items-center gap-3 p-3 bg-teal-500/10 border border-teal-500/15 rounded-lg">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex flex-col gap-4 text-left">
+                  <div className="flex items-center gap-3 p-3 bg-[#1a7f8e]/10 border border-[#1a7f8e]/15 rounded-lg">
                     <FaCheckCircle className="text-teal-400 shrink-0 text-base" />
                     <div>
                       <h4 className="text-white text-xs font-bold leading-none">Note Approved</h4>
@@ -1259,15 +1253,15 @@ function SoapGenerationPage() {
                   <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
                     <div>
                       <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Created By</span>
-                      <span className="text-slate-200 font-semibold block mt-0.5">Dr. Patel</span>
+                      <span className="text-slate-700 font-semibold block mt-0.5">Dr. Patel</span>
                     </div>
                     <div>
                       <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Date & Time</span>
-                      <span className="text-slate-200 font-semibold block mt-0.5">{new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-slate-700 font-semibold block mt-0.5">{new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
-                    <div className="col-span-2 border-t border-[#1e2d4a] pt-3">
+                    <div className="col-span-2 border-t border-slate-200 pt-3">
                       <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Patient Chart</span>
-                      <span className="text-slate-200 font-semibold block mt-0.5">{patient.name} ({patient.patient_id})</span>
+                      <span className="text-slate-700 font-semibold block mt-0.5">{patient.name} ({patient.patient_id})</span>
                     </div>
                   </div>
                 </div>
@@ -1275,14 +1269,14 @@ function SoapGenerationPage() {
                 <div className="flex items-center justify-end gap-3.5 mt-2">
                   <button
                     onClick={() => setShowApprovePanel(false)}
-                    className="btn-3d-secondary h-10 px-5 text-xs font-bold"
+                    className="px-5 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-full cursor-pointer"
                   >
                     Back to Review
                   </button>
                   <button
                     onClick={handleConfirmSave}
                     disabled={saving}
-                    className="btn-3d-primary h-10 px-6 text-xs font-bold flex items-center justify-center gap-2"
+                    className="px-6 h-10 bg-gradient-to-r from-[#e8a020] to-[#f3b236] text-[#1a3b6e] font-extrabold text-xs rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-2"
                   >
                     {saving ? (
                       <>
@@ -1301,16 +1295,16 @@ function SoapGenerationPage() {
             ) : (
               /* Regular Preview / Editor Workspace Flow */
               <>
-                <div className="flex items-center justify-between border-b border-[#1e2d4a]/60 pb-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
                     <FaNotesMedical className="text-teal-400 text-xs" />
-                    <h2 className="text-white text-xs font-black uppercase tracking-wider m-0">Aura Clinical Report</h2>
+                    <h2 className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider m-0">Aura Clinical Report</h2>
                   </div>
                   
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setIsEditing(!isEditing)}
-                      className="btn-3d-secondary h-8 px-3.5 text-[11px] flex items-center gap-1.5"
+                      className="px-3.5 h-8 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-[11px] rounded-full cursor-pointer flex items-center gap-1.5"
                     >
                       {isEditing ? (
                         <>
@@ -1339,29 +1333,29 @@ function SoapGenerationPage() {
                     </div>
                     <div className="flex flex-col">
                       {/* Editor formatting toolbar */}
-                      <div className="flex items-center gap-1 bg-[#131d30] border border-[#1e2d4a] border-b-0 rounded-t-xl px-2 py-1 max-w-full overflow-x-auto">
+                      <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 border-b-0 rounded-t-xl px-2 py-1 max-w-full overflow-x-auto">
                         {["B", "I", "U", "S"].map(tag => (
                           <button
                             key={tag}
                             type="button"
                             onClick={() => handleInsertMarkup(tag)}
-                            className="w-7 h-7 flex items-center justify-center font-bold text-xs text-slate-400 hover:text-white bg-transparent border-none rounded hover:bg-[#172237] transition-all cursor-pointer font-sans active:scale-95"
+                            className="w-7 h-7 flex items-center justify-center font-bold text-xs text-slate-600 hover:text-slate-900 bg-transparent border-none rounded hover:bg-slate-200 transition-all cursor-pointer font-sans active:scale-95"
                           >
                             {tag === "B" ? <strong>B</strong> : tag === "I" ? <em>I</em> : tag === "U" ? <u>U</u> : <del>S</del>}
                           </button>
                         ))}
-                        <div className="w-px h-4 bg-[#1e2d4a] mx-1" />
+                        <div className="w-px h-4 bg-slate-200 mx-1" />
                         <button
                           type="button"
                           onClick={() => handleInsertMarkup("bullet")}
-                          className="h-7 px-2 flex items-center justify-center text-[10px] font-bold text-slate-400 hover:text-white bg-transparent border-none rounded hover:bg-[#172237] transition-all cursor-pointer active:scale-95"
+                          className="h-7 px-2 flex items-center justify-center text-[10px] font-bold text-slate-400 hover:text-white bg-transparent border-none rounded hover:bg-slate-200 transition-all cursor-pointer active:scale-95"
                         >
                           • List
                         </button>
                         <button
                           type="button"
                           onClick={() => handleInsertMarkup("number")}
-                          className="h-7 px-2 flex items-center justify-center text-[10px] font-bold text-slate-400 hover:text-white bg-transparent border-none rounded hover:bg-[#172237] transition-all cursor-pointer active:scale-95"
+                          className="h-7 px-2 flex items-center justify-center text-[10px] font-bold text-slate-400 hover:text-white bg-transparent border-none rounded hover:bg-slate-200 transition-all cursor-pointer active:scale-95"
                         >
                           1. List
                         </button>
@@ -1370,7 +1364,7 @@ function SoapGenerationPage() {
                         id="clinical-textarea"
                         value={soapText}
                         onChange={(e) => setSoapText(e.target.value)}
-                        className="w-full h-[546px] p-4 rounded-b-xl bg-[#0c1322] border border-[#1e2d4a] text-slate-300 text-xs outline-none focus:border-teal-500/40 transition-all font-mono resize-none leading-relaxed select-text"
+                        className="w-full h-[546px] p-4 rounded-b-xl bg-white border border-slate-300 text-slate-700 text-xs outline-none focus:border-[#1a7f8e] transition-all font-mono resize-none leading-relaxed select-text"
                         placeholder="Clinical report is compiling..."
                       />
                     </div>
@@ -1385,20 +1379,20 @@ function SoapGenerationPage() {
                       <span className="text-[10px] text-teal-400 font-bold uppercase tracking-wider">Live Document Preview</span>
                       <span className="text-[9px] text-slate-500 italic">Scroll to read the entire report</span>
                     </div>
-                    <div className="w-full h-[580px] overflow-y-auto pr-1 bg-[#131d30] border border-[#1e2d4a] rounded-xl p-6 relative overflow-x-hidden font-sans">
+                    <div className="w-full h-[580px] overflow-y-auto pr-1 bg-slate-50 border border-slate-200 rounded-xl p-6 relative overflow-x-hidden font-sans">
                       {/* Elegant Watermark */}
                       <div className="absolute top-8 right-8 text-teal-500/5 pointer-events-none">
                         <FaNotesMedical className="text-9xl" />
                       </div>
 
                       {/* Header Letterhead */}
-                      <div className="border-b border-[#1e2d4a] pb-4 mb-5 flex justify-between items-start">
+                      <div className="border-b border-slate-200 pb-4 mb-5 flex justify-between items-start">
                         <div>
-                          <h3 className="text-white text-xs font-bold tracking-wide uppercase">ClarityNote EHR System</h3>
+                          <h3 className="text-[#1a3b6e] text-xs font-bold tracking-wide uppercase">ClarityNote EHR System</h3>
                           <p className="text-[10px] text-slate-400 font-medium mt-0.5">Automated Ambient Medical Documentation</p>
                         </div>
                         <div className="text-right">
-                          <span className="text-[9px] bg-teal-500/10 border border-teal-500/20 text-teal-400 font-bold px-2 py-0.5 rounded font-mono uppercase tracking-wider">
+                          <span className="text-[9px] bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 text-[#1a7f8e] font-bold px-2 py-0.5 rounded font-mono uppercase tracking-wider">
                             Status: Draft
                           </span>
                           <p className="text-[9px] text-slate-500 mt-1 font-mono">ID: {patient.patient_id}-{Date.now().toString().slice(-4)}</p>
@@ -1408,33 +1402,33 @@ function SoapGenerationPage() {
                       {/* Document Content Flow */}
                       <div className="flex flex-col gap-6">
                         {/* Subjective */}
-                        <div className="border-l-4 border-teal-500 pl-4 py-0.5">
-                          <h4 className="text-teal-400 text-[10px] font-bold uppercase tracking-wider mb-2">Subjective (S)</h4>
+                        <div className="border-l-4 border-[#1a7f8e] pl-4 py-0.5">
+                          <h4 className="text-[#1a7f8e] text-[10px] font-bold uppercase tracking-wider mb-2">Subjective (S)</h4>
                           {renderFormattedText(parsedSoap.subjective)}
                         </div>
 
                         {/* Objective */}
-                        <div className="border-l-4 border-sky-500 pl-4 py-0.5">
-                          <h4 className="text-sky-400 text-[10px] font-bold uppercase tracking-wider mb-2">Objective (O)</h4>
+                        <div className="border-l-4 border-[#2b6cb0] pl-4 py-0.5">
+                          <h4 className="text-[#2b6cb0] text-[10px] font-bold uppercase tracking-wider mb-2">Objective (O)</h4>
                           {renderFormattedText(parsedSoap.objective)}
                         </div>
 
                         {/* Assessment */}
-                        <div className="border-l-4 border-indigo-400 pl-4 py-0.5">
-                          <h4 className="text-indigo-400 text-[10px] font-bold uppercase tracking-wider mb-2">Assessment (A)</h4>
+                        <div className="border-l-4 border-indigo-600 pl-4 py-0.5">
+                          <h4 className="text-indigo-600 text-[10px] font-bold uppercase tracking-wider mb-2">Assessment (A)</h4>
                           {renderFormattedText(parsedSoap.assessment)}
                         </div>
 
                         {/* Plan */}
-                        <div className="border-l-4 border-emerald-500 pl-4 py-0.5">
-                          <h4 className="text-emerald-400 text-[10px] font-bold uppercase tracking-wider mb-2">Plan (P)</h4>
+                        <div className="border-l-4 border-[#2eb37e] pl-4 py-0.5">
+                          <h4 className="text-[#2eb37e] text-[10px] font-bold uppercase tracking-wider mb-2">Plan (P)</h4>
                           {renderFormattedText(parsedSoap.plan)}
                         </div>
 
                         {/* Diagnosis Suggestions */}
                         {parsedSoap.diagnosis && (
-                          <div className="mt-2 border border-amber-500/15 bg-amber-500/5 rounded-xl p-4">
-                            <h4 className="text-amber-400 text-[10px] font-bold uppercase tracking-wider mb-2">Diagnosis Suggestions</h4>
+                          <div className="mt-2 border border-amber-200 bg-amber-50 rounded-xl p-4">
+                            <h4 className="text-amber-700 text-[10px] font-bold uppercase tracking-wider mb-2">Diagnosis Suggestions</h4>
                             {renderDiagnosisSuggestions(parsedSoap.diagnosis)}
                             <p className="text-[9px] text-amber-500/80 italic mt-3 pt-2 border-t border-amber-500/10 leading-normal">
                               *Disclaimer: Diagnostic recommendations are generated by AI and are intended for reference only. They do not constitute official medical advice.
@@ -1446,14 +1440,14 @@ function SoapGenerationPage() {
                         {(parsedSoap.insights || parsedSoap.predictions) && (
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                             {parsedSoap.insights && (
-                              <div className="border border-teal-500/15 bg-teal-500/5 rounded-xl p-4">
-                                <h4 className="text-teal-400 text-[10px] font-bold uppercase tracking-wider mb-2">Clinical Insights</h4>
+                              <div className="border border-[#1a7f8e]/20 bg-[#1a7f8e]/5 rounded-xl p-4">
+                                <h4 className="text-[#1a7f8e] text-[10px] font-bold uppercase tracking-wider mb-2">Clinical Insights</h4>
                                 {renderFormattedText(parsedSoap.insights)}
                               </div>
                             )}
                             {parsedSoap.predictions && (
-                              <div className="border border-sky-500/15 bg-sky-500/5 rounded-xl p-4">
-                                <h4 className="text-sky-400 text-[10px] font-bold uppercase tracking-wider mb-2">Symptom Predictions</h4>
+                              <div className="border border-[#2b6cb0]/20 bg-[#2b6cb0]/5 rounded-xl p-4">
+                                <h4 className="text-[#2b6cb0] text-[10px] font-bold uppercase tracking-wider mb-2">Symptom Predictions</h4>
                                 {renderFormattedText(parsedSoap.predictions)}
                               </div>
                             )}
@@ -1468,12 +1462,12 @@ function SoapGenerationPage() {
                 )}
 
                 {/* Bottom Actions Cluster */}
-                <div className="flex flex-wrap items-center justify-between gap-3 mt-2 pt-4 border-t border-[#1e2d4a]">
+                <div className="flex flex-wrap items-center justify-between gap-3 mt-2 pt-4 border-t border-slate-100">
                   
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => navigate("/dashboard")}
-                      className="btn-3d-secondary h-10 px-4 text-xs"
+                      className="px-4 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-full cursor-pointer"
                     >
                       Back to Dashboard
                     </button>
@@ -1481,7 +1475,7 @@ function SoapGenerationPage() {
                     <button
                       onClick={fetchSoapNote}
                       disabled={loading}
-                      className="btn-3d-secondary h-10 px-4 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="px-4 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-full cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <FaRedo className="text-[10px]" />
                       <span>Regenerate SOAP</span>
@@ -1492,7 +1486,7 @@ function SoapGenerationPage() {
                     <button
                       onClick={handleDownloadPDF}
                       disabled={downloading}
-                      className="btn-3d-secondary h-10 px-4 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="px-4 h-10 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold text-xs rounded-full cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {downloading ? (
                         <>
@@ -1510,7 +1504,7 @@ function SoapGenerationPage() {
                     <button
                       onClick={handleSaveReport}
                       disabled={saving}
-                      className="btn-3d-primary h-10 px-5 text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="px-5 h-10 bg-gradient-to-r from-[#e8a020] to-[#f3b236] text-[#1a3b6e] font-extrabold text-xs rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {saving ? (
                         <>

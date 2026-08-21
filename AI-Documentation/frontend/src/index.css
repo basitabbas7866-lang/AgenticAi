@@ -6,51 +6,55 @@ html {
 
 /* ── Custom theme extensions for Tailwind v4 ──────── */
 @theme {
-  /* Soothing Slate-Blue/Teal palette for eye comfort and healthcare branding */
-  --color-lp-bg: rgba(12, 19, 34, 0.85); /* Translucent navy background */
-  --color-lp-surface: #172237; /* Soothing card background */
-  --color-lp-surface-2: #1e2d4a; /* Elevated card background */
-  --color-lp-glass: rgba(23, 34, 55, 0.7);
-  --color-lp-glass-border: rgba(255, 255, 255, 0.08);
-  --color-lp-text: #e2e8f0;
-  --color-lp-text-muted: #94a3b8;
-  --color-lp-heading: #f8fafc;
-  --color-lp-primary: #14b8a6; /* Medical Teal */
-  --color-lp-primary-glow: rgba(20, 184, 166, 0.25);
-  --color-lp-accent: #0ea5e9; /* Medical Sky Blue */
-  --color-lp-cyan: #2dd4bf;
-  --color-lp-cyan-glow: rgba(45, 212, 191, 0.2);
-  --color-lp-emerald: #10b981;
-  --color-lp-rose: #f43f5e; /* Coral red for critical/stops */
-  --color-lp-amber: #f59e0b; /* Amber for warnings/pauses */
+  /* ORS-style Medical Portal palette: Navy + Teal + Amber */
+  --color-lp-bg: #ffffff;
+  --color-lp-surface: #f5f7fa;
+  --color-lp-surface-2: #eef1f6;
+  --color-lp-glass: rgba(255, 255, 255, 0.95);
+  --color-lp-glass-border: rgba(26, 59, 110, 0.1);
+  --color-lp-text: #1a1a2e;
+  --color-lp-text-muted: #4a5568;
+  --color-lp-heading: #1a3b6e;
+  --color-lp-primary: #1a7f8e;     /* ORS Teal */
+  --color-lp-primary-glow: rgba(26, 127, 142, 0.15);
+  --color-lp-accent: #00909e;      /* Deeper Teal accent */
+  --color-lp-navy: #1a3b6e;        /* Deep Navy blue */
+  --color-lp-cyan: #2196b6;
+  --color-lp-cyan-glow: rgba(33, 150, 182, 0.12);
+  --color-lp-emerald: #2eb37e;
+  --color-lp-rose: #c0392b;
+  --color-lp-amber: #e8a020;       /* ORS Yellow/Amber CTA */
 
-  /* Overriding standard Tailwind v4 color mapping to inject medical tones globally */
-  --color-indigo-50: #f0fdfa;
-  --color-indigo-100: #ccfbf1;
-  --color-indigo-200: #99f6e4;
-  --color-indigo-300: #5eead4;
-  --color-indigo-400: #2dd4bf;
-  --color-indigo-500: #14b8a6;
-  --color-indigo-600: #0d9488;
-  --color-indigo-700: #0f766e;
-  --color-indigo-800: #115e59;
-  --color-indigo-900: #134e4a;
-  --color-indigo-950: #0b2e2b;
+  /* Keep slate variables correct (light theme) */
+  --color-slate-50: #f8fafc;
+  --color-slate-100: #f1f5f9;
+  --color-slate-200: #e2e8f0;
+  --color-slate-300: #cbd5e1;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1e293b;
+  --color-slate-900: #0f172a;
+  --color-slate-950: #020617;
 
-  --color-purple-500: #0ea5e9;
-  --color-purple-600: #0284c7;
-  --color-purple-950: #0c3554;
+  --color-indigo-950: #1e1b4b;
+  --color-indigo-900: #312e81;
+  --color-indigo-800: #3730a3;
+  --color-indigo-700: #4338ca;
+  --color-indigo-600: #4f46e5;
+  --color-indigo-500: #6366f1;
+  --color-indigo-400: #818cf8;
+  --color-indigo-300: #a5b4fc;
+  --color-indigo-200: #c7d2fe;
+  --color-indigo-100: #e0e7ff;
+  --color-indigo-50: #eef2ff;
 
-  --color-rose-500: #f43f5e;
-  --color-rose-600: #e11d48;
+  --color-purple-500: #8b5cf6;
+  --color-purple-600: #7c3aed;
+  --color-purple-950: #2e1065;
 
-  --color-amber-500: #f59e0b;
-  --color-amber-600: #d97706;
-
-  --color-slate-900: #1a2536;
-  --color-slate-950: #0c1322;
-
-  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -75,12 +79,29 @@ html {
 
 body {
   margin: 0;
-  background-image: url("./assets/clinical_abstract_bg.jpg");
+  background-color: #ffffff;
+  color: #1a1a2e;
+}
+
+/* Auth and dashboard keep photo backgrounds */
+body:has(.auth-page) {
+  background-image: url("./assets/auth_bg.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  background-color: #0c1322;
+}
+
+body:has(.dashboard-page),
+body:has(.soap-generation-page) {
+  background-color: #f5f7fa;
+  background-image: none;
+}
+
+/* Landing page is pure white - no background photo */
+body:has(.landing-page) {
+  background-color: #f5f7fa;
+  background-image: none;
 }
 
 #root {
@@ -93,6 +114,7 @@ body {
   box-sizing: border-box;
   background: transparent;
 }
+
 
 p {
   margin: 0;
@@ -146,17 +168,19 @@ p {
   animation: wave-glow 1.4s ease-in-out infinite;
 }
 
-/* Glassmorphism gradient borders with 3D depth */
+/* Glassmorphism gradient borders with 3D depth — warm clinical version */
 .glass-panel {
-  background: rgba(23, 34, 55, 0.65);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-top-color: rgba(255, 255, 255, 0.12); /* 3D highlight */
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(214, 211, 209, 0.5);
+  border-top-color: rgba(255, 255, 255, 0.9);
   box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.2), 
-    0 10px 30px -10px rgba(0, 0, 0, 0.45), 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+    0 2px 4px -1px rgba(120, 100, 80, 0.05),
+    0 8px 24px -8px rgba(120, 100, 80, 0.10),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.7);
   border-radius: 20px;
+  color: #292524; /* Always warm charcoal text inside cards */
 }
 
 .glass-panel-hover {
@@ -164,12 +188,12 @@ p {
 }
 .glass-panel-hover:hover {
   transform: translateY(-2px);
-  border-color: rgba(20, 184, 166, 0.25);
-  border-top-color: rgba(20, 184, 166, 0.45);
+  border-color: rgba(13, 148, 136, 0.25);
+  border-top-color: rgba(13, 148, 136, 0.4);
   box-shadow: 
-    0 20px 40px -15px rgba(0, 0, 0, 0.5), 
-    0 0 25px rgba(20, 184, 166, 0.1), 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    0 12px 32px -10px rgba(120, 100, 80, 0.12), 
+    0 0 18px rgba(13, 148, 136, 0.06), 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.75);
 }
 
 /* 3D Tactile Buttons for Medical Interface */
@@ -211,27 +235,27 @@ p {
 }
 
 .btn-3d-secondary {
-  background: #27354f; /* Slate-blue secondary */
-  color: #e2e8f0 !important;
-  border: 1px solid #1e293b;
-  border-top-color: #3b4e70;
+  background: #f5f5f4; /* Stone-100 secondary */
+  color: #44403c !important;
+  border: 1px solid #d6d3d1;
+  border-top-color: #f5f5f4;
   box-shadow: 
-    0 4px 0 0 #182235, 
-    0 8px 16px -4px rgba(0, 0, 0, 0.25);
+    0 4px 0 0 #d6d3d1, 
+    0 8px 16px -4px rgba(120, 110, 90, 0.06);
 }
 .btn-3d-secondary:hover {
-  background: #334666;
-  color: #ffffff !important;
+  background: #ecebe9;
+  color: #1c1917 !important;
   transform: translateY(1px);
   box-shadow: 
-    0 3px 0 0 #182235, 
-    0 6px 12px -4px rgba(0, 0, 0, 0.25);
+    0 3px 0 0 #d6d3d1, 
+    0 6px 12px -4px rgba(120, 110, 90, 0.08);
 }
 .btn-3d-secondary:active {
   transform: translateY(4px);
   box-shadow: 
-    0 0px 0 0 #182235, 
-    0 2px 4px rgba(0, 0, 0, 0.15);
+    0 0px 0 0 #d6d3d1, 
+    0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .btn-3d-danger {
@@ -546,4 +570,202 @@ p {
 }
 .animate-cursor-blink {
   animation: cursor-blink 1s step-end infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ██ HEALTHCARE REASSURANCE & EMPATHY THEME OVERRIDES
+   ══════════════════════════════════════════════════════════════ */
+
+/* Dynamically redirect body background images per page using body:has() */
+body:has(.landing-page) {
+  background-image: url("./assets/landing_bg.jpg") !important;
+}
+
+body:has(.auth-page) {
+  background-image: url("./assets/auth_bg.jpg") !important;
+}
+
+body:has(.dashboard-page),
+body:has(.soap-generation-page) {
+  background-image: url("./assets/warm_clinical_bg.jpg") !important;
+}
+
+/* Dynamically redirect hardcoded tech-dark values to warm ivory clinical values */
+div[class*="bg-[#0c1322]"],
+div[class*="bg-[#0c1322]/10"],
+div[class*="bg-[#0c1322]/20"],
+div[class*="bg-[#0c1322]/30"],
+div[class*="bg-[#0c1322]/40"],
+div[class*="bg-[#0c1322]/50"],
+div[class*="bg-[#0c1322]/70"],
+div[class*="bg-[#0c1322]/95"],
+div[class*="bg-slate-950/20"],
+div[class*="bg-slate-950/40"],
+div[class*="bg-slate-950/25"],
+div[class*="bg-slate-950/60"],
+div[class*="bg-slate-950/80"] {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  color: #292524 !important;
+}
+
+div[class*="bg-[#0a0f1d]"] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Warm clinical light containers for inner cards and plan bubbles */
+div[class*="bg-[#070b13]"],
+div[class*="bg-[#070b13]/60"],
+div[class*="bg-[#0d1527]"],
+div[class*="bg-[#050811]"],
+div[class*="bg-[#172237]"],
+div[class*="bg-[#172237]/80"] {
+  background-color: #fafaf9 !important; /* light stone-50 */
+  border-color: rgba(212, 163, 115, 0.16) !important;
+}
+
+/* Active login/register slide selector overrides */
+div[class*="bg-gradient-to-r"][class*="from-slate-900"] {
+  background: linear-gradient(to right, #ecebe9, #d6d3d1) !important;
+}
+
+/* Redirect hardcoded dark buttons to clinical primary green */
+div[class*="bg-[#1f1f1f]"] {
+  background-color: #0d9488 !important;
+  box-shadow: inset 0 0.5px rgba(255,255,255,0.4), 0 4px 10px -4px rgba(13, 148, 136, 0.4) !important;
+}
+
+/* Redefine borders for soft clinic theme */
+*[class*="border-[#1e2d4a]"],
+*[class*="border-slate-900"] {
+  border-color: rgba(212, 163, 115, 0.16) !important;
+}
+
+/* Empathy sage/teal highlights */
+.text-sky-400,
+.text-indigo-400,
+.text-purple-400,
+.text-teal-400 {
+  color: #0f766e !important; /* Sage Teal */
+  font-weight: 700 !important;
+}
+
+.text-sky-400:hover,
+.text-indigo-400:hover,
+.text-purple-400:hover,
+.text-teal-400:hover {
+  color: #0d9488 !important;
+}
+
+/* Empathy secondary alerts */
+.text-slate-400,
+.text-slate-500,
+.text-slate-600 {
+  color: #57534e !important; /* stone-600 (darker for high readability) */
+}
+
+/* Reassuring clean black headings */
+h1, h2, h3, h4, h5, h6 {
+  color: #1c1917 !important; /* Warm dark grey */
+}
+
+
+
+/* Correct inputs to be clean white with charcoal text */
+input, textarea, select {
+  background-color: #ffffff !important;
+  color: #1c1917 !important;
+  border: 1px solid #d6d3d1 !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #a8a29e !important;
+}
+
+/* Ensure buttons keep white text */
+.btn-3d,
+.btn-3d-primary,
+.btn-3d-secondary,
+.btn-3d-danger,
+.btn-3d-warning {
+  color: #ffffff !important;
+}
+
+.btn-3d-secondary {
+  color: #44403c !important;
+}
+
+.btn-3d-secondary:hover {
+  color: #1c1917 !important;
+}
+
+/* Dictation indicator text color fix */
+.dashboard-page {
+  color: #292524 !important;
+}
+
+/* Enforce accessible, highly readable font sizes for busy practitioners */
+h1 {
+  font-size: 1.85rem !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.025em !important;
+}
+
+h2 {
+  font-size: 1.35rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+}
+
+h3 {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+}
+
+h4 {
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+}
+
+p, span:not(.relative), label {
+  font-weight: 500;
+}
+
+/* Elevate clinical readability by converting hard-to-read text nodes to legible scales */
+.text-[10px], .text-[9px], .text-[8.5px], .text-[8px] {
+  font-size: 0.75rem !important;
+}
+
+.text-[11px] {
+  font-size: 0.8rem !important;
+}
+
+/* Direct overrides for bg-slate-950 variants to keep them warm linen/white glassmorphism */
+div[class*="bg-slate-950"],
+div[class*="bg-slate-950/25"],
+div[class*="bg-slate-950/40"],
+div[class*="bg-slate-950/60"],
+div[class*="bg-slate-950/80"] {
+  background-color: rgba(255, 255, 255, 0.78) !important;
+  color: #292524 !important;
+}
+
+/* Active login/register slide selector overrides */
+div[class*="bg-gradient-to-r"][class*="from-slate-900"] {
+  background: linear-gradient(to right, #ecebe9, #d6d3d1) !important;
+}
+
+/* Redirect hardcoded dark buttons to clinical primary green */
+div[class*="bg-[#1f1f1f]"] {
+  background-color: #0d9488 !important;
+  box-shadow: inset 0 0.5px rgba(255,255,255,0.4), 0 4px 10px -4px rgba(13, 148, 136, 0.4) !important;
+}
+
+/* Ensure secondary buttons maintain clinical contrast */
+.btn-3d-secondary {
+  color: #44403c !important;
+}
+.btn-3d-secondary:hover {
+  color: #1c1917 !important;
 }

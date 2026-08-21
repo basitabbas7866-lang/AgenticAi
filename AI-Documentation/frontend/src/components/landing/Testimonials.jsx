@@ -54,32 +54,29 @@ function Testimonials() {
 
   return (
     <section
-      className="relative py-16 overflow-hidden flex flex-col justify-center min-h-[540px]"
+      className="relative py-16 overflow-hidden flex flex-col justify-center min-h-[540px] bg-white/5"
       id="reviews"
-      style={{
-        background: "radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%)"
-      }}
     >
-      {/* Premium Ambient Background Glows */}
+      {/* Ambient Background Glows */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute w-[500px] h-[500px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-500/[0.05] blur-[120px]" />
+        <div className="absolute w-[500px] h-[500px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-teal-500/[0.04] blur-[120px]" />
       </div>
 
       <div className="max-w-[1320px] mx-auto w-full px-6 relative z-10" ref={sectionRef}>
-        {/* Compact Heading */}
+        {/* Heading */}
         <div className="lp-reveal max-w-[600px] mx-auto text-center mb-10">
-          <span className="inline-block mb-2 text-cyan-400 text-[0.7rem] font-bold tracking-[0.2em] uppercase bg-cyan-500/10 px-2.5 py-0.5 rounded-full">
+          <span className="inline-block mb-2 text-teal-600 text-[0.7rem] font-bold tracking-[0.2em] uppercase bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
             Reviews
           </span>
-          <h2 className="font-sans font-extrabold text-white text-2xl sm:text-3xl tracking-tight mb-2">
+          <h2 className="font-sans font-extrabold text-stone-900 text-2xl sm:text-3xl tracking-tight mb-2">
             Trusted by frontline clinicians
           </h2>
-          <p className="text-slate-400 text-sm leading-relaxed">
+          <p className="text-stone-600 text-sm leading-relaxed">
             Clinicians use ClarityNote AI to reduce the hidden work after each patient conversation.
           </p>
         </div>
 
-        {/* Shorter 3D Stack Carousel Area */}
+        {/* 3D Stack Carousel */}
         <div
           className="relative max-w-[950px] mx-auto h-[230px] sm:h-[180px] flex items-center justify-center"
           onMouseEnter={() => setIsHovered(true)}
@@ -99,7 +96,7 @@ function Testimonials() {
                 key={item.name}
                 style={{ originY: 0.5 }}
                 animate={{
-                  x: position * 240, // Pulled slightly tighter horizontally 
+                  x: position * 240,
                   scale: isActive ? 1 : 0.82,
                   opacity: isActive ? 1 : 0.25,
                   zIndex: isActive ? 10 : 1,
@@ -112,23 +109,23 @@ function Testimonials() {
                 }}
                 onClick={() => { if (!isActive) setActiveIndex(index); }}
                 className={`absolute w-full max-w-[540px] p-5 sm:p-6 rounded-xl border text-center flex flex-col justify-center items-center backdrop-blur-xl transition-colors duration-300 ${isActive
-                    ? "border-indigo-500/25 bg-slate-900/75 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.6)] cursor-default"
-                    : "border-white/[0.03] bg-slate-900/10 shadow-none cursor-pointer hover:bg-slate-900/30"
+                    ? "border-teal-500/25 bg-white/90 shadow-[0_20px_50px_-12px_rgba(120,100,80,0.12)] cursor-default"
+                    : "border-stone-200/30 bg-white/30 shadow-none cursor-pointer hover:bg-white/60"
                   }`}
               >
-                <p className="text-slate-200 text-sm sm:text-base font-medium leading-relaxed italic mb-3.5 max-w-lg relative z-10">
+                <p className="text-stone-700 text-sm sm:text-base font-medium leading-relaxed italic mb-3.5 max-w-lg relative z-10">
                   "{item.quote}"
                 </p>
 
                 <div className="flex items-center gap-2.5">
-                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-[10px] tracking-wider">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold text-[10px] tracking-wider">
                     {item.initials}
                   </div>
                   <div className="text-left">
-                    <h5 className="text-white font-bold text-xs tracking-wide inline-block">
+                    <h5 className="text-stone-900 font-bold text-xs tracking-wide inline-block">
                       {item.name}
                     </h5>
-                    <span className="text-cyan-400 text-[10px] font-semibold uppercase tracking-wider ml-2 border-l border-white/10 pl-2">
+                    <span className="text-teal-600 text-[10px] font-semibold uppercase tracking-wider ml-2 border-l border-stone-200 pl-2">
                       {item.role}
                     </span>
                   </div>
@@ -137,23 +134,23 @@ function Testimonials() {
             );
           })}
 
-          {/* Sleek Minimal Navigation Chevrons */}
+          {/* Navigation Chevrons */}
           <button
             onClick={handlePrev}
-            className="absolute left-0 lg:-left-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-white/10 bg-slate-900/80 text-slate-400 hover:text-white hover:scale-105 active:scale-95 transition-all z-30 flex items-center justify-center text-sm backdrop-blur-sm"
+            className="absolute left-0 lg:-left-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-stone-200 bg-white/80 text-stone-500 hover:text-stone-900 hover:scale-105 active:scale-95 transition-all z-30 flex items-center justify-center text-sm backdrop-blur-sm shadow-sm"
             aria-label="Previous testimonial"
           >
             ←
           </button>
           <button
             onClick={handleNext}
-            className="absolute right-0 lg:-right-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-white/10 bg-slate-900/80 text-slate-400 hover:text-white hover:scale-105 active:scale-95 transition-all z-30 flex items-center justify-center text-sm backdrop-blur-sm"
+            className="absolute right-0 lg:-right-6 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full border border-stone-200 bg-white/80 text-stone-500 hover:text-stone-900 hover:scale-105 active:scale-95 transition-all z-30 flex items-center justify-center text-sm backdrop-blur-sm shadow-sm"
           >
             →
           </button>
         </div>
 
-        {/* Clean Pagination Dots */}
+        {/* Pagination Dots */}
         <div className="flex justify-center gap-2 mt-8">
           {testimonials.map((_, i) => (
             <button
@@ -161,8 +158,8 @@ function Testimonials() {
               onClick={() => setActiveIndex(i)}
               aria-label={`Go to testimonial ${i + 1}`}
               className={`h-1 rounded-full cursor-pointer transition-all duration-300 ${i === activeIndex
-                  ? "w-5 bg-gradient-to-r from-indigo-500 to-cyan-400 shadow-[0_0_8px_rgba(99,102,241,0.4)]"
-                  : "w-1 bg-white/20 hover:bg-white/40"
+                  ? "w-5 bg-gradient-to-r from-teal-500 to-emerald-500 shadow-[0_0_8px_rgba(13,148,136,0.3)]"
+                  : "w-1 bg-stone-300 hover:bg-stone-400"
                 }`}
             />
           ))}
