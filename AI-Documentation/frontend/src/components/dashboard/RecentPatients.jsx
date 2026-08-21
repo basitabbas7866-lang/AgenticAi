@@ -94,7 +94,7 @@ function RecentPatients({
                   setPatient(null);
                   setShowCreateForm(true);
                 }}
-                className="bg-[#1a7f8e] hover:bg-[#00909e] text-white px-3 py-1.5 rounded-full text-xs font-bold transition-all border-none flex items-center gap-1.5 cursor-pointer"
+                className="btn-pill btn-primary py-1.5 px-4 text-xs"
               >
                 <FaUserPlus />
                 <span>Register Patient</span>
@@ -270,13 +270,13 @@ function RecentPatients({
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={onCreatePatient}
-                    className="flex-1 bg-gradient-to-r from-[#e8a020] to-[#f3b236] text-[#1a3b6e] font-extrabold text-xs h-10 rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow active:scale-95"
+                    className="btn-pill btn-amber flex-1 h-10 text-xs shadow-sm"
                   >
                     Confirm Registration
                   </button>
                   <button
                     onClick={() => setShowCreateForm(false)}
-                    className="px-4 h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-full border border-slate-300 cursor-pointer"
+                    className="btn-pill btn-secondary px-5 h-10 text-xs"
                   >
                     Cancel
                   </button>

@@ -78,7 +78,7 @@ function Navbar({ onEnterApp }) {
           {/* ORS Yellow Register / Login CTA Button */}
           <button
             onClick={onEnterApp}
-            className="flex items-center gap-2 bg-gradient-to-r from-[#e8a020] to-[#f3b236] hover:from-[#d49018] hover:to-[#e8a020] text-[#1a3b6e] font-extrabold text-xs px-5 py-2 rounded-full shadow-md hover:shadow-lg transition-all border border-amber-300 active:scale-95 cursor-pointer ml-2"
+            className="btn-pill btn-amber text-xs px-5 py-2 shadow-sm ml-2 flex items-center gap-2"
           >
             <FaSignInAlt className="text-sm" />
             <span>Register / Login</span>

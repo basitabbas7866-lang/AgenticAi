@@ -61,7 +61,7 @@ const Hero = ({ onEnterApp }) => {
               <div className="flex flex-wrap gap-4 items-center mt-2">
                 <button
                   onClick={onEnterApp}
-                  className="bg-[#e8a020] hover:bg-[#d49018] text-[#1a3b6e] font-extrabold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl transition-all border border-amber-200 flex items-center gap-2 active:scale-95 cursor-pointer"
+                  className="btn-pill btn-amber text-sm sm:text-base px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl flex items-center gap-2"
                 >
                   <span>Register / Login</span>
                   <FaArrowRight className="text-xs" />
@@ -121,7 +121,7 @@ const Hero = ({ onEnterApp }) => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 relative z-10 pt-6 border-t border-white/20">
             <button
               onClick={onEnterApp}
-              className="bg-[#2b6cb0] hover:bg-[#1a4971] text-white font-bold text-xs sm:text-sm py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20 transition-all cursor-pointer"
+              className="btn-pill bg-[#2b6cb0] hover:bg-[#1a4971] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20"
             >
               <FaCalendarCheck className="text-amber-300 text-base" />
               <span>Book Appointment</span>
@@ -129,7 +129,7 @@ const Hero = ({ onEnterApp }) => {
 
             <button
               onClick={onEnterApp}
-              className="bg-[#00909e] hover:bg-[#007a87] text-white font-bold text-xs sm:text-sm py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20 transition-all cursor-pointer"
+              className="btn-pill bg-[#00909e] hover:bg-[#007a87] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20"
             >
               <FaUserMd className="text-amber-300 text-base" />
               <span>Book Teleconsultation Appointment</span>
@@ -137,7 +137,7 @@ const Hero = ({ onEnterApp }) => {
 
             <button
               onClick={onEnterApp}
-              className="bg-[#107c74] hover:bg-[#0c615b] text-white font-bold text-xs sm:text-sm py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20 transition-all cursor-pointer"
+              className="btn-pill bg-[#107c74] hover:bg-[#0c615b] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20"
             >
               <FaQrcode className="text-amber-300 text-base" />
               <span>Scan and Share</span>

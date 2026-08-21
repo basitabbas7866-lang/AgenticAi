@@ -446,7 +446,7 @@ function PatientJourney({ patient }) {
             <div className="flex justify-end">
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 flex items-center justify-center gap-2 py-2 px-4 text-xs font-bold bg-[#1a7f8e] hover:bg-[#00909e] text-white rounded-full"
+                className="btn-pill btn-primary py-2 px-4 text-xs shadow-sm flex items-center gap-2"
               >
                 <FaPlus className="text-[10px]" />
                 <span>Manual Timeline Log</span>
@@ -519,14 +519,14 @@ function PatientJourney({ patient }) {
                     <button
                       type="button"
                       onClick={() => setShowAddForm(false)}
-                      className="px-4 py-2 rounded-xl text-xs text-slate-500 bg-transparent hover:text-slate-700 cursor-pointer"
+                      className="btn-pill btn-secondary px-4 py-2 text-xs"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white px-5 py-2 text-xs font-bold"
+                      className="btn-pill btn-amber px-5 py-2 text-xs shadow-sm"
                     >
                       <span>Log Milestone</span>
                     </button>
@@ -1179,7 +1179,7 @@ function PatientJourney({ patient }) {
                 type="button"
                 onClick={handleAnalyzeCoordination}
                 disabled={loadingAnalysis}
-                className="bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white px-6 py-2.5 text-xs font-bold flex items-center gap-2 cursor-pointer"
+                className="btn-pill btn-primary px-7 py-3 text-xs shadow-md flex items-center gap-2"
               >
                 {loadingAnalysis ? (
                   <>
@@ -1255,8 +1255,7 @@ function PatientJourney({ patient }) {
                               <button
                                 onClick={() => handleInlineAction(review.id, "APPROVED")}
                                 disabled={actioningInline}
-                                className="btn-3d btn-3d-primary px-3 py-1.5 text-[11px] flex items-center gap-1 cursor-pointer bg-emerald-600 border-emerald-700 hover:bg-emerald-700"
-                                style={{ backgroundColor: '#059669', borderColor: '#047857' }}
+                                className="btn-pill btn-success px-4 py-1.5 text-xs"
                               >
                                 <FaCheck className="text-[10px]" />
                                 <span>Approve</span>
@@ -1264,7 +1263,7 @@ function PatientJourney({ patient }) {
                               <button
                                 onClick={() => handleInlineAction(review.id, "REJECTED")}
                                 disabled={actioningInline}
-                                className="btn-3d btn-3d-danger px-3 py-1.5 text-[11px] flex items-center gap-1 cursor-pointer"
+                                className="btn-pill btn-danger px-4 py-1.5 text-xs"
                               >
                                 <FaTimes className="text-[10px]" />
                                 <span>Reject</span>

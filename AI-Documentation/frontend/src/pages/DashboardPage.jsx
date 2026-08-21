@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as api from "../api";
 import {
@@ -6,7 +6,10 @@ import {
   FaUserMd,
   FaRegFileAlt,
   FaShieldAlt,
-  FaHospital
+  FaHospital,
+  FaBars,
+  FaSignOutAlt,
+  FaUser
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,7 +30,11 @@ import CoordinationReviewQueue from "../components/dashboard/CoordinationReviewQ
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = loggedInUser.role || "doctor";
+
+  const [activeTab, setActiveTab] = useState(role === "patient" ? "journey" : "dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   // Core clinical states
@@ -144,23 +151,60 @@ function DashboardPage() {
     });
   };
 
+  useEffect(() => {
+    if (!patient && recentPatients?.length > 0) {
+      setPatient(recentPatients[0]);
+      setPatientId(recentPatients[0].patient_id);
+    }
+  }, [recentPatients, patient]);
+
 
 
   return (
     <div className="dashboard-page flex flex-col w-screen h-screen bg-[#f5f7fa] text-stone-800 font-sans select-none text-left relative overflow-hidden">
       
-      {/* Top Navigation Bar (Matching Auth Page Theme) */}
-      <div className="w-full bg-[#1a3b6e] text-white py-2 px-6 flex items-center justify-between border-b border-[#00909e]/30 z-30 shrink-0">
-          <div className="flex items-center gap-2">
-              <img src="/logo.jpg" alt="CareWeave Logo" className="h-8 w-auto object-contain bg-white px-2 py-0.5 rounded" />
-              <span className="text-xs font-bold text-amber-300 hidden sm:inline">| Clinical Workstation Portal</span>
+      {/* Top Navigation Bar with Dynamic User Profile & Actions */}
+      <div className="w-full bg-[#1a3b6e] text-white py-2 px-4 sm:px-6 flex items-center justify-between border-b border-[#00909e]/30 z-30 shrink-0 shadow-sm">
+          <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsSidebarOpen(true)}
+                className="md:hidden p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/20 cursor-pointer"
+              >
+                <FaBars className="text-sm" />
+              </button>
+              <img src="/logo.jpg" alt="CareWeave Logo" className="h-8 w-auto object-contain bg-white px-2 py-0.5 rounded shadow-sm" />
+              <span className="text-xs font-bold text-amber-300 hidden sm:inline">
+                | {role === "patient" ? "Patient Care Portal" : "Clinical Workstation"}
+              </span>
           </div>
-          <button
-              onClick={() => navigate("/")}
-              className="text-xs font-bold bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-full transition-all border border-white/20 cursor-pointer flex items-center gap-1.5"
-          >
-              Exit Workstation &rarr;
-          </button>
+
+          <div className="flex items-center gap-3">
+              {/* User Identity Pill */}
+              <div className="hidden sm:flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full border border-white/20">
+                  <div className="w-5 h-5 rounded-full bg-amber-400 text-[#1a3b6e] flex items-center justify-center font-extrabold text-[10px]">
+                    {loggedInUser.name ? loggedInUser.name[0] : (role === "patient" ? "D" : "S")}
+                  </div>
+                  <span className="text-xs font-bold text-white">
+                    {loggedInUser.name || (role === "patient" ? "David Miller" : "Dr. Sarah Jenkins")}
+                  </span>
+                  <span className="text-[9px] uppercase px-1.5 py-0.2 rounded font-extrabold bg-[#1a7f8e] text-white">
+                    {role}
+                  </span>
+              </div>
+
+              {/* Sign Out Button */}
+              <button
+                  onClick={() => {
+                    localStorage.removeItem("user");
+                    navigate("/auth");
+                  }}
+                  className="text-xs font-bold bg-white/10 hover:bg-red-500/30 text-white hover:text-red-200 px-3.5 py-1.5 rounded-full transition-all border border-white/20 cursor-pointer flex items-center gap-1.5 active:scale-95"
+              >
+                  <FaSignOutAlt className="text-xs opacity-80" />
+                  <span>Sign Out</span>
+              </button>
+          </div>
       </div>
 
       <div className="flex flex-1 h-full overflow-hidden relative">

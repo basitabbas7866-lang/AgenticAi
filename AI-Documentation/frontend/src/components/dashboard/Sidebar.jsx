@@ -10,24 +10,49 @@ import {
     FaShieldAlt,
     FaTimes,
     FaMicrophone,
-    FaClipboardCheck
+    FaClipboardCheck,
+    FaUserMd,
+    FaUser,
+    FaStethoscope
 } from 'react-icons/fa';
 
 function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
     const navigate = useNavigate();
 
-    const menuItems = [
+    const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const role = loggedInUser.role || 'doctor';
+    const userName = loggedInUser.name || (role === 'patient' ? 'David Miller' : 'Dr. Sarah Jenkins');
+    const userRoleText = loggedInUser.specialty || (role === 'patient' ? 'Patient Portal' : role === 'nurse' ? 'Clinical Nurse' : 'General Practitioner');
+
+    // Get initials
+    const initials = userName
+        .split(' ')
+        .filter(Boolean)
+        .map(n => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase() || 'CW';
+
+    const menuItems = role === 'patient' ? [
+        { id: 'journey', label: 'My Care Journey', helper: 'Your timeline & clinical updates', icon: FaHospital },
+        { id: 'profile', label: 'My Patient Profile', helper: 'Clinical parameters & records', icon: FaCog }
+    ] : [
         { id: 'dashboard', label: 'Clinical Workspace', helper: 'Dictation & SOAP framework', icon: FaMicrophone },
         { id: 'patients', label: 'Patient Registry', helper: 'Search & register charts', icon: FaUsers },
         { id: 'journey', label: 'Care Journey', helper: 'Patient timeline & events', icon: FaHospital },
         { id: 'reports', label: 'Consultation Reports', helper: 'Review saved encounters', icon: FaRegFileAlt },
         { id: 'reviews', label: 'Review Queue', helper: 'Awaiting human decisions', icon: FaClipboardCheck },
-        { id: 'profile', label: 'Practitioner Profile', helper: 'Clinic & compliance parameters', icon: FaCog }
+        { id: 'profile', label: 'Practitioner Profile', helper: 'Clinic & compliance settings', icon: FaCog }
     ];
 
     const handleTabClick = (tabId) => {
         if (setActiveTab) setActiveTab(tabId);
         if (onClose) onClose();
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        navigate('/auth');
     };
 
     return (
@@ -72,7 +97,7 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
                             <button
                                 key={item.id}
                                 onClick={() => handleTabClick(item.id)}
-                                className={`group relative flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left bg-transparent cursor-pointer transition-all duration-300 outline-none border-none ${
+                                className={`group relative flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-left bg-transparent cursor-pointer transition-all duration-200 outline-none border-none ${
                                     isActive ? 'text-[#1a7f8e] font-extrabold' : 'text-slate-600 hover:text-[#1a7f8e] hover:bg-[#1a7f8e]/10'
                                 }`}
                             >
@@ -80,13 +105,13 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
                                 {isActive && (
                                     <motion.div
                                         layoutId="premiumActiveTabIndicator"
-                                        className="absolute inset-0 rounded-xl bg-[#1a7f8e]/10 border border-[#1a7f8e]/15 z-0"
+                                        className="absolute inset-0 rounded-xl bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 z-0"
                                         transition={{ type: "spring", stiffness: 380, damping: 30 }}
                                     />
                                 )}
 
                                 {/* Left Icon Core Frame */}
-                                <div className={`w-7.5 h-7.5 rounded-lg flex items-center justify-center shrink-0 relative z-10 transition-all duration-300 ${
+                                <div className={`w-7.5 h-7.5 rounded-lg flex items-center justify-center shrink-0 relative z-10 transition-all duration-200 ${
                                     isActive
                                         ? 'bg-[#1a7f8e] text-white shadow-sm'
                                         : 'bg-slate-50 border border-slate-200 text-slate-500 group-hover:border-[#1a7f8e]/30 group-hover:bg-[#1a7f8e]/5 group-hover:text-[#1a7f8e] shadow-sm'
@@ -108,11 +133,11 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
                                     </span>
                                 </div>
 
-                                {/* Active Right Track Line */}
+                                {/* Active Right Indicator Glow */}
                                 {isActive && (
                                     <motion.div
                                         layoutId="activeRightTrackGlow"
-                                        className="w-[2.5px] h-4 rounded-full bg-[#1a7f8e] ml-auto relative z-10 shadow-sm"
+                                        className="w-[3px] h-4 rounded-full bg-[#1a7f8e] ml-auto relative z-10 shadow-sm"
                                     />
                                 )}
                             </button>
@@ -121,40 +146,39 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
                 </nav>
             </div>
 
-            {/* LOWER COMPLIANCE & PRACTITIONER CARD LOCK */}
+            {/* LOWER COMPLIANCE & ACTIVE USER PROFILE CARD */}
             <div className="flex flex-col gap-2.5 border-t border-slate-100 pt-3">
 
                 {/* Core HIPAA Capsule Badge */}
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-emerald-200 bg-emerald-50 justify-center cursor-default">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 justify-center cursor-default">
                     <FaShieldAlt className="text-emerald-600 text-[10px] shrink-0" />
                     <span className="text-[9px] text-emerald-700 font-extrabold uppercase tracking-wider">
-                        HIPAA Pipeline Secure
+                        HIPAA Pipeline Active
                     </span>
                 </div>
 
-                {/* Practitioner Interactive Widget Block */}
-                <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl transition-colors duration-200 hover:bg-slate-50 group select-none">
-                    <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[#1a7f8e] font-black text-xs shrink-0 group-hover:border-[#1a7f8e]/30 transition-colors">
-                        SJ
+                {/* Dynamic User Profile Card */}
+                <div className="flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 bg-slate-50 transition-colors select-none">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1a7f8e] to-[#1a3b6e] text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">
+                        {initials}
                     </div>
                     <div className="min-w-0 flex-1 text-left">
-                        <p className="text-xs text-[#1a3b6e] font-extrabold truncate leading-none mb-1">
-                            Dr. Sarah Jenkins
+                        <p className="text-xs text-[#1a3b6e] font-extrabold truncate leading-tight mb-0.5">
+                            {userName}
                         </p>
-                        <div className="flex items-center gap-1 text-[10px] text-slate-500 font-semibold">
-                            <FaHospital className="text-[9px] text-[#1a7f8e] shrink-0" />
-                            <span className="truncate">Metro General Hospital</span>
+                        <div className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
+                            <span className="truncate">{userRoleText}</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Compact Terminal Exit Action Button */}
+                {/* Sign Out Button */}
                 <button
-                    onClick={() => navigate('/auth')}
-                    className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-bold bg-slate-50 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-600 border border-slate-200 rounded-full cursor-pointer transition-all active:scale-95"
+                    onClick={handleLogout}
+                    className="btn-pill btn-secondary w-full text-xs py-2 text-slate-600 hover:text-red-600 hover:border-red-200 hover:bg-red-50"
                 >
                     <FaSignOutAlt className="text-xs shrink-0 opacity-80" />
-                    <span>Exit Workstation</span>
+                    <span>Sign Out</span>
                 </button>
             </div>
         </aside>

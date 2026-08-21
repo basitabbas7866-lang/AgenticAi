@@ -234,7 +234,7 @@ function WorkstationController({
 
                   <button
                     onClick={handleQuickRegister}
-                    className="w-full bg-[#1a7f8e] hover:bg-[#00909e] text-white font-extrabold text-xs h-10 rounded-full border-none cursor-pointer shadow-sm hover:shadow active:scale-95 flex items-center justify-center"
+                    className="btn-pill btn-primary w-full h-10 text-xs rounded-full shadow-sm flex items-center justify-center"
                   >
                     <span>Register &amp; Lock Patient Chart</span>
                   </button>
@@ -254,37 +254,38 @@ function WorkstationController({
 
       {/* Control Triggers */}
       {patient && (
-        <div className="mt-6 flex items-center gap-4">
+        <div className="mt-6 flex items-center gap-3">
           {!isRecording && !isPaused ? (
             <button
               onClick={startRecording}
-              className="bg-[#1a7f8e] hover:bg-[#00909e] text-white py-2.5 px-6 rounded-full text-xs font-bold shadow-sm cursor-pointer border-none"
+              className="btn-pill btn-primary py-2.5 px-7 text-xs rounded-full shadow-md flex items-center gap-2"
             >
-              Start Recording
+              <FaMicrophone className="text-xs" />
+              <span>Start Recording</span>
             </button>
           ) : (
             <>
               {isPaused ? (
                 <button
                   onClick={resumeRecording}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold rounded-full cursor-pointer flex items-center gap-2"
+                  className="btn-pill btn-secondary py-2 px-5 text-xs rounded-full flex items-center gap-1.5"
                 >
-                  <FaPlay className="text-[9px]" />
+                  <FaPlay className="text-[9px] text-[#1a7f8e]" />
                   <span>Resume</span>
                 </button>
               ) : (
                 <button
                   onClick={pauseRecording}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-xs font-bold rounded-full cursor-pointer flex items-center gap-2"
+                  className="btn-pill btn-secondary py-2 px-5 text-xs rounded-full flex items-center gap-1.5"
                 >
-                  <FaPause className="text-[9px]" />
+                  <FaPause className="text-[9px] text-amber-500" />
                   <span>Pause</span>
                 </button>
               )}
 
               <button
                 onClick={stopRecording}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-full border-none cursor-pointer flex items-center gap-2"
+                className="btn-pill btn-danger py-2 px-5 text-xs rounded-full flex items-center gap-1.5"
               >
                 <FaStop className="text-[9px]" />
                 <span>Stop</span>
@@ -322,7 +323,7 @@ function WorkstationController({
           <button
             onClick={transcribeAudio}
             disabled={transcribing}
-            className="w-full bg-gradient-to-r from-[#e8a020] to-[#f3b236] text-[#1a3b6e] font-extrabold text-xs h-10 rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-2 disabled:opacity-50"
+            className="btn-pill btn-amber w-full h-11 text-xs rounded-full shadow-md flex items-center justify-center gap-2"
           >
             {transcribing ? (
               <>
