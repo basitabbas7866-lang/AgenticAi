@@ -75,11 +75,35 @@ function SoapGenerationPage() {
       console.error(error);
       // Fallback response for offline/testing mode
       await new Promise(resolve => setTimeout(resolve, 3600));
+      const isCardiac = (conversation || "").toLowerCase().includes("seene") || (conversation || "").toLowerCase().includes("chest") || (conversation || "").toLowerCase().includes("breath") || (conversation || "").toLowerCase().includes("saans");
+      const isFever = (conversation || "").toLowerCase().includes("bukhar") || (conversation || "").toLowerCase().includes("fever") || (conversation || "").toLowerCase().includes("cough") || (conversation || "").toLowerCase().includes("gale") || (conversation || "").toLowerCase().includes("cold");
+      
+      let fallbackText = "";
+      if (isCardiac) {
+        fallbackText = 
+          `S: Patient complains of mild chest tightness and localized discomfort during moderate exertion. Patient states: "I feel some tightness when I walk fast, but it subsides after resting for 5-10 minutes." No active radiation to arm.\n\n` +
+          `O: General appearance is comfortable. Heart rate and peripheral perfusion stable. BP 135/85 mmHg, HR 78 bpm, SpO2 98%.\n\n` +
+          `A: Stable angina symptoms under evaluation. Satisfactory control of mild hypertension.\n\n` +
+          `P: 1. Continue Amlodipine 5mg once daily as prescribed.\n2. Advised Sorbitrate 5mg sublingually strictly as needed for acute chest pain.\n3. Scheduled ECG and cardiology outpatient clinic referral.`;
+      } else if (isFever) {
+        fallbackText = 
+          `S: Patient reports seasonal fever, body aches, and persistent dry cough for the past 3 days. Denies shortness of breath.\n\n` +
+          `O: Temperature is 100.2F. Lungs are clear. Throat exam reveals mild pharyngeal erythema.\n\n` +
+          `A: Acute upper respiratory tract infection (URTI) with mild fever.\n\n` +
+          `P: 1. Paracetamol 650mg strictly for fever/body pain (Max 3 times daily).\n2. Cough syrup 10ml thrice daily.\n3. Warm water salt gargles 3-4 times a day.\n4. Plenty of oral fluids and absolute rest.`;
+      } else {
+        fallbackText = 
+          `S: Patient presents for routine follow-up checkup. Complains of mild occupational stress and erratic sleep schedules.\n\n` +
+          `O: Physical exam is unremarkable. Vitals: BP 140/90 mmHg, HR 72 bpm, SpO2 99%.\n\n` +
+          `A: Elevated blood pressure reading likely secondary to work-related stress.\n\n` +
+          `P: 1. Advised salt and oil restrictions in daily diet.\n2. Start regular morning walks for 30 minutes.\n3. Monitor BP daily for 1 week and review in clinic.`;
+      }
+
       setSoapText(
-        `S: Patient complains of sharp left lower quadrant abdominal pain for 3 days, rated 6/10, worse after eating. Denies fever, chills, nausea, or changes in bowel habits. Background history of diverticulosis.\n\n` +
-        `O: General appearance is comfortable. Abdomen is soft, with mild tenderness in the left lower quadrant without rebound or guarding. Vital signs: BP 138/88 mmHg, HR 72 bpm, temp 98.6F.\n\n` +
-        `A: Left lower quadrant abdominal pain, likely acute diverticulitis flare vs. symptomatic diverticulosis. Stable vitals.\n\n` +
-        `P: 1. Recommend clear liquid diet for 48 hours, then gradual advance to high fiber.\n2. Prescribe oral antibiotics (Ciprofloxacin and Metronidazole) for 7 days.\n3. Return to clinic or go to ER if fever develops, pain increases, or unable to tolerate fluids.\n4. Follow-up in 1 week.`
+        `SOAP Note:\n${fallbackText}\n\n` +
+        `Diagnosis Suggestions:\n- Evaluated for Stable Angina/Hypertension.\n- Outpatient Specialist Referral.\n\n` +
+        `Clinical Insights:\n- Advised lifestyle modification and diet restrictions.\n\n` +
+        `Symptom Predictions:\n- High recovery expected with compliance.`
       );
     } finally {
       clearInterval(stepInterval);

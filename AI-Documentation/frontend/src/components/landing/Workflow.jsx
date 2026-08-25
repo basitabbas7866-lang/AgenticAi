@@ -2,11 +2,12 @@ import {
   FaBrain,
   FaComments,
   FaFileMedical,
-  FaMicrophone
+  FaMicrophone,
+  FaVideo
 } from "react-icons/fa";
 import { useRevealChildren } from "../../hooks/useReveal";
 
-function Workflow() {
+function Workflow({ onEnterApp }) {
   const containerRef = useRevealChildren();
 
   const steps = [
@@ -89,6 +90,28 @@ function Workflow() {
               </p>
             </div>
           ))}
+        </div>
+
+        {/* Quick Teleconsultation Action Banner in Workflow */}
+        <div className="mt-12 p-6 rounded-2xl bg-gradient-to-r from-[#1a3b6e] via-[#1a65a3] to-[#1a7f8e] text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-white/20">
+          <div className="flex items-center gap-4 text-left">
+            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-xl text-amber-300 shadow-inner shrink-0">
+              <FaVideo />
+            </div>
+            <div>
+              <h4 className="text-base font-extrabold text-white m-0">Live 1:1 Teleconsultation Video Room</h4>
+              <p className="text-xs text-slate-200 m-0 mt-1 font-medium leading-relaxed">
+                Connect directly with real-time video, dual camera feeds, patient vitals synchronization, and automatic ambient AI transcription.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onEnterApp}
+            className="btn-pill btn-amber text-xs px-6 py-3 shadow-lg hover:shadow-xl flex items-center gap-2 whitespace-nowrap cursor-pointer shrink-0"
+          >
+            <FaVideo className="text-xs" />
+            <span>Sign In to Launch Video Room</span>
+          </button>
         </div>
       </div>
     </section>

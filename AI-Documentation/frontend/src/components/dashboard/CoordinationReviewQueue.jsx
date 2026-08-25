@@ -14,12 +14,13 @@ import {
 import { getReviews, takeReviewAction, syncReviews } from '../../api';
 
 function CoordinationReviewQueue() {
+    const loggedInUser = JSON.parse(localStorage.getItem('user') || '{}');
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(false);
     const [actioning, setActioning] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [comments, setComments] = useState({}); // Stores comment per review ID
-    const [reviewerName, setReviewerName] = useState('Dr. Sarah Jenkins');
+    const [reviewerName, setReviewerName] = useState(loggedInUser.name || 'Dr. Sarah Jenkins');
 
     const fetchReviews = async () => {
         setLoading(true);

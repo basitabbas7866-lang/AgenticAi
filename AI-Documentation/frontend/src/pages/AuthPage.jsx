@@ -414,14 +414,28 @@ function AuthPage() {
                                     {formData.role === "doctor" && (
                                         <div className="relative group">
                                             <FaStethoscope className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1a7f8e] text-sm z-10" />
-                                            <input
-                                                type="text"
+                                            <select
                                                 name="specialty"
                                                 value={formData.specialty}
                                                 onChange={handleInputChange}
-                                                placeholder="Medical Specialty (e.g. Cardiology)"
-                                                className="w-full h-11 pl-11 pr-4 rounded-xl bg-white border border-slate-300 text-[#1a1a2e] text-xs outline-none focus:border-[#1a7f8e] focus:ring-2 focus:ring-[#1a7f8e]/20 transition-all font-semibold"
-                                            />
+                                                className="w-full h-11 pl-11 pr-10 rounded-xl bg-white border border-slate-300 text-[#1a1a2e] text-xs outline-none focus:border-[#1a7f8e] focus:ring-2 focus:ring-[#1a7f8e]/20 transition-all font-semibold appearance-none cursor-pointer"
+                                                required
+                                            >
+                                                <option value="">-- Select Medical Specialty --</option>
+                                                <option value="Cardiology">Cardiology</option>
+                                                <option value="Dentist">Dentist (Dental Medicine)</option>
+                                                <option value="Pediatrics">Pediatrics</option>
+                                                <option value="Orthopedics">Orthopedics</option>
+                                                <option value="Neurology">Neurology</option>
+                                                <option value="Dermatology">Dermatology</option>
+                                                <option value="General Medicine">General Medicine</option>
+                                                <option value="Psychiatry">Psychiatry</option>
+                                                <option value="Diagnosis">Diagnosis</option>
+                                                <option value="General Surgery">General Surgery</option>
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">
+                                                ▼
+                                            </div>
                                         </div>
                                     )}
                                 </motion.div>

@@ -13,7 +13,8 @@ import {
     FaClipboardCheck,
     FaUserMd,
     FaUser,
-    FaStethoscope
+    FaStethoscope,
+    FaVideo
 } from 'react-icons/fa';
 
 function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
@@ -34,10 +35,12 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
         .toUpperCase() || 'CW';
 
     const menuItems = role === 'patient' ? [
+        { id: 'teleconsult', label: '1:1 Teleconsultation', helper: 'Join live video room with Doctor', icon: FaVideo },
         { id: 'journey', label: 'My Care Journey', helper: 'Your timeline & clinical updates', icon: FaHospital },
         { id: 'profile', label: 'My Patient Profile', helper: 'Clinical parameters & records', icon: FaCog }
     ] : [
         { id: 'dashboard', label: 'Clinical Workspace', helper: 'Dictation & SOAP framework', icon: FaMicrophone },
+        { id: 'teleconsult', label: '1:1 Teleconsultation', helper: 'HD WebRTC Doctor-Patient Room', icon: FaVideo },
         { id: 'patients', label: 'Patient Registry', helper: 'Search & register charts', icon: FaUsers },
         { id: 'journey', label: 'Care Journey', helper: 'Patient timeline & events', icon: FaHospital },
         { id: 'reports', label: 'Consultation Reports', helper: 'Review saved encounters', icon: FaRegFileAlt },

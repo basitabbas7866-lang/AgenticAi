@@ -4,11 +4,17 @@ import {
   FaFileMedical,
   FaLock,
   FaMicrophone,
-  FaUsers
+  FaUsers,
+  FaVideo
 } from "react-icons/fa";
 import { useRevealChildren } from "../../hooks/useReveal";
 
 const features = [
+  {
+    icon: <FaVideo className="text-amber-400" />,
+    title: "1:1 Teleconsultation Video Room",
+    desc: "Direct WebRTC encrypted video call with live ambient AI dialogue transcription and vitals sync."
+  },
   {
     icon: <FaMicrophone />,
     title: "Speech to Text",
@@ -30,18 +36,13 @@ const features = [
     desc: "Keep generated reports organized for quick follow-up."
   },
   {
-    icon: <FaEdit />,
-    title: "Editable Output",
-    desc: "Review, refine, and approve notes before storing them."
-  },
-  {
     icon: <FaLock />,
     title: "Secure Workflow",
     desc: "Designed around careful access and clinical data handling."
   }
 ];
 
-function Features() {
+function Features({ onEnterApp }) {
   const containerRef = useRevealChildren();
 
   return (

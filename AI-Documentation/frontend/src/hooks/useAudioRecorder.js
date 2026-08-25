@@ -6,6 +6,7 @@ export function useAudioRecorder() {
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [audioLevels, setAudioLevels] = useState([0, 0, 0, 0, 0, 0, 0, 0]);
+  const [transcriptText, setTranscriptText] = useState("");
 
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
@@ -14,6 +15,7 @@ export function useAudioRecorder() {
   const analyserRef = useRef(null);
   const sourceRef = useRef(null);
   const animationFrameIdRef = useRef(null);
+  const recognitionRef = useRef(null);
 
   // Timer Effect
   useEffect(() => {
@@ -53,6 +55,7 @@ export function useAudioRecorder() {
   const startRecording = async (patient) => {
     if (!patient) return;
     try {
+      setTranscriptText(""); // Reset transcript
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
@@ -61,6 +64,34 @@ export function useAudioRecorder() {
       chunksRef.current = [];
       mediaRecorder.ondataavailable = (e) => chunksRef.current.push(e.data);
       mediaRecorder.start();
+
+      // Initialize HTML5 Web Speech recognition
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = "en-IN"; // English (India) / Hinglish text support
+        
+        recognition.onresult = (event) => {
+          let currentTranscript = "";
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              currentTranscript += event.results[i][0].transcript + ". ";
+            }
+          }
+          if (currentTranscript) {
+            setTranscriptText(prev => prev + currentTranscript);
+          }
+        };
+
+        recognition.onerror = (e) => {
+          console.warn("Speech recognition error:", e.error);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+      }
 
       // Web Audio API setup for real-time frequency analysis
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
@@ -110,6 +141,10 @@ export function useAudioRecorder() {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
       
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+
       if (animationFrameIdRef.current) {
         cancelAnimationFrame(animationFrameIdRef.current);
       }
@@ -125,8 +160,8 @@ export function useAudioRecorder() {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
 
-      if (audioContextRef.current && audioContextRef.current.state === "suspended") {
-        audioContextRef.current.resume();
+      if (recognitionRef.current) {
+        recognitionRef.current.start();
       }
 
       const updateAnalyser = () => {
@@ -157,6 +192,10 @@ export function useAudioRecorder() {
       };
     }
 
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
     // Clean up Web Audio API resources
     if (animationFrameIdRef.current) {
       cancelAnimationFrame(animationFrameIdRef.current);
@@ -184,6 +223,8 @@ export function useAudioRecorder() {
     recordingTime,
     audioBlob,
     audioLevels,
+    transcriptText,
+    setTranscriptText,
     setAudioBlob,
     startRecording,
     pauseRecording,

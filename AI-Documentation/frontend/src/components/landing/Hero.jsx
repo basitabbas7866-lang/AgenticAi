@@ -7,20 +7,25 @@ import {
   FaQrcode,
   FaStethoscope,
   FaHospital,
-  FaChevronRight
+  FaChevronRight,
+  FaVideo
 } from "react-icons/fa";
 
 const heroHighlights = [
   {
-    title: "1. Speaker-Aware Voice Capture",
+    title: "1. 1:1 Video Teleconsultation",
+    desc: "HD WebRTC encrypted video call with live ambient AI dialogue transcription."
+  },
+  {
+    title: "2. Speaker-Aware Voice Capture",
     desc: "AI automatically separates doctor and patient dialogue in real-time."
   },
   {
-    title: "2. Automatic SOAP Note Draft",
+    title: "3. Automatic SOAP Note Draft",
     desc: "Generates structured Subjective, Objective, Assessment & Plan notes instantly."
   },
   {
-    title: "3. Multi-Agent Care Tracking",
+    title: "4. Multi-Agent Care Tracking",
     desc: "Monitors referrals, appointments, and pending lab results automatically."
   }
 ];
@@ -129,10 +134,10 @@ const Hero = ({ onEnterApp }) => {
 
             <button
               onClick={onEnterApp}
-              className="btn-pill bg-[#00909e] hover:bg-[#007a87] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20"
+              className="btn-pill bg-[#00909e] hover:bg-[#007a87] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow-lg border border-amber-300 ring-2 ring-amber-400/50 active:scale-95"
             >
-              <FaUserMd className="text-amber-300 text-base" />
-              <span>Book Teleconsultation Appointment</span>
+              <FaVideo className="text-amber-300 text-base" />
+              <span className="font-extrabold">1:1 Video Teleconsultation</span>
             </button>
 
             <button

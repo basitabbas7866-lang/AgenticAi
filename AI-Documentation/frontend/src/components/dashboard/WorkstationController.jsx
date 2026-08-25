@@ -35,7 +35,8 @@ function WorkstationController({
   resumeRecording,
   stopRecording,
   transcribeAudio,
-  formatTime
+  formatTime,
+  transcriptText
 }) {
   const [waveHistory, setWaveHistory] = React.useState(Array(80).fill(0.01));
   const audioLevelsRef = React.useRef(audioLevels);
@@ -314,6 +315,16 @@ function WorkstationController({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Real-time speech-to-text feedback */}
+      {(isRecording || isPaused) && transcriptText && (
+        <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl w-full text-left animate-fadeIn max-w-md">
+          <span className="text-[9px] text-[#1a7f8e] font-black uppercase tracking-wider block mb-1">🎙️ Live Transcription Stream</span>
+          <p className="m-0 text-[#1a3b6e] text-xs font-semibold leading-relaxed max-h-16 overflow-y-auto no-scrollbar">
+            {transcriptText}
+          </p>
         </div>
       )}
 

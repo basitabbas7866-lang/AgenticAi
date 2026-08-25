@@ -120,9 +120,11 @@ function PatientJourney({ patient }) {
 
   const handleInlineAction = async (reviewId, decision) => {
     const comment = inlineComments[reviewId] || "";
+    const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+    const reviewerName = loggedInUser.name || "Dr. Sarah Jenkins";
     setActioningInline(true);
     try {
-      await takeReviewAction(reviewId, decision, "Dr. Sarah Jenkins", comment);
+      await takeReviewAction(reviewId, decision, reviewerName, comment);
       setInlineComments(prev => {
         const copy = { ...prev };
         delete copy[reviewId];

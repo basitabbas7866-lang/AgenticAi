@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== "undefined" && window.location.hostname ? `http://${window.location.hostname}:8000` : "http://127.0.0.1:8000");
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -62,14 +62,63 @@ export const getPatient = async (patientId) => {
   return response;
 };
 
+export const getPatients = async (doctorId = null) => {
+  const url = doctorId ? `/patients?doctor_id=${doctorId}` : "/patients";
+  const response = await apiClient.get(url);
+  return response;
+};
+
+export const getDoctors = async () => {
+  const response = await apiClient.get("/doctors");
+  return response;
+};
+
+export const assignDoctor = async (patientId, doctorId) => {
+  const response = await apiClient.post(`/patient/${patientId}/assign-doctor`, { doctor_id: doctorId });
+  return response;
+};
+
+export const approvePatient = async (patientId, doctorId = null) => {
+  const url = doctorId ? `/patient/${patientId}/approve?doctor_id=${doctorId}` : `/patient/${patientId}/approve`;
+  const response = await apiClient.post(url);
+  return response;
+};
+
 export const createPatient = async (patientData) => {
   const response = await apiClient.post("/patient/create", patientData);
   return response;
 };
 
-export const transcribeAudio = async (audioBlob) => {
+export const prescribeMedication = async (patientId, docId, docName, medName, inst) => {
+  const response = await apiClient.post(`/patient/${patientId}/prescribe`, {
+    doctor_id: String(docId),
+    doctor_name: docName,
+    medication_name: medName,
+    instructions: inst
+  });
+  return response;
+};
+
+export const getPatientPrescriptions = async (patientId, doctorId = null) => {
+  const url = doctorId ? `/patient/${patientId}/prescriptions?doctor_id=${doctorId}` : `/patient/${patientId}/prescriptions`;
+  const response = await apiClient.get(url);
+  return response;
+};
+
+export const deletePrescription = async (prescriptionId) => {
+  const response = await apiClient.delete(`/prescription/${prescriptionId}`);
+  return response;
+};
+
+export const transcribeAudio = async (audioBlob, patientId = "", spokenText = "") => {
   const formData = new FormData();
   formData.append("file", audioBlob, "recording.webm");
+  if (patientId) {
+    formData.append("patient_id", patientId);
+  }
+  if (spokenText) {
+    formData.append("spoken_text", spokenText);
+  }
   const response = await apiClient.post("/transcribe", formData, {
     headers: {
       "Content-Type": "multipart/form-data",

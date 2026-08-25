@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaUserPlus, FaUser, FaVenusMars, FaPhone, FaAddressCard, FaInfoCircle, FaFileAlt, FaHistory, FaPills, FaSpinner, FaUpload } from 'react-icons/fa';
-import { getPatientSessions, uploadFile } from '../../api';
+import { FaSearch, FaUserPlus, FaUser, FaVenusMars, FaPhone, FaAddressCard, FaInfoCircle, FaFileAlt, FaHistory, FaPills, FaSpinner, FaUpload, FaVideo, FaSyncAlt, FaCheck } from 'react-icons/fa';
+import { getPatientSessions, uploadFile, approvePatient, getPatientPrescriptions, prescribeMedication, deletePrescription, getPatients } from '../../api';
 
 function RecentPatients({
   patient,
@@ -13,12 +13,139 @@ function RecentPatients({
   setNewPatient,
   onSearchPatient,
   onCreatePatient,
-  recentPatientsList = []
+  recentPatientsList = [],
+  onStartTeleconsult
 }) {
   const [localSearch, setLocalSearch] = useState('');
   const [patientTab, setPatientTab] = useState('overview');
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [internalPatients, setInternalPatients] = useState(recentPatientsList || []);
+  const [loadingList, setLoadingList] = useState(false);
+
+  const fetchLivePatients = async () => {
+    setLoadingList(true);
+    try {
+      const docUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const docId = docUser.role === "doctor" ? docUser.id : null;
+      const res = await getPatients(docId);
+      if (res.data && res.data.success && Array.isArray(res.data.patients)) {
+        setInternalPatients(res.data.patients);
+        if (!patient && res.data.patients.length > 0) {
+          setPatient(res.data.patients[0]);
+          setPatientId(res.data.patients[0].patient_id);
+        }
+      }
+    } catch (err) {
+      console.log("Error loading live patients:", err);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  useEffect(() => {
+    if (recentPatientsList && recentPatientsList.length > 0) {
+      setInternalPatients(recentPatientsList);
+    }
+  }, [recentPatientsList]);
+
+  useEffect(() => {
+    fetchLivePatients();
+  }, []);
+
+  const handleApproveIntake = async () => {
+    if (!patient) return;
+    setApproving(true);
+    try {
+      const docUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const docId = docUser.id || "";
+      const res = await approvePatient(patient.patient_id, docId);
+      if (res.data.success) {
+        setPatient(prev => ({ 
+          ...prev, 
+          status: 'APPROVED',
+          assigned_doctor_id: docId,
+          claimed_by_name: docUser.name
+        }));
+        alert("Checkup claimed! Patient intake has been approved under your care.");
+        fetchLivePatients();
+      } else {
+        alert(res.data.message || "Failed to approve intake.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to approve intake request.");
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [loadingPrescriptions, setLoadingPrescriptions] = useState(false);
+  const [newMedName, setNewMedName] = useState("");
+  const [newMedInstructions, setNewMedInstructions] = useState("");
+  const [savingPrescription, setSavingPrescription] = useState(false);
+
+  const fetchPrescriptions = async () => {
+    if (!patient) return;
+    setLoadingPrescriptions(true);
+    try {
+      const res = await getPatientPrescriptions(patient.patient_id);
+      if (res.data.success) {
+        setPrescriptions(res.data.prescriptions || []);
+      }
+    } catch (err) {
+      console.log("Failed to load prescriptions:", err);
+    } finally {
+      setLoadingPrescriptions(false);
+    }
+  };
+
+  const handleAddPrescription = async (e) => {
+    e.preventDefault();
+    if (!newMedName || !newMedInstructions || !patient) return;
+    setSavingPrescription(true);
+    try {
+      const docUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const docId = docUser.id || "D98000";
+      const docName = docUser.name || "Dr. Sarah Jenkins";
+      
+      const res = await prescribeMedication(patient.patient_id, docId, docName, newMedName, newMedInstructions);
+      if (res.data.success) {
+        setNewMedName("");
+        setNewMedInstructions("");
+        fetchPrescriptions();
+      } else {
+        alert(res.data.message || "Failed to prescribe medication");
+      }
+    } catch (err) {
+      console.error("Prescription error:", err);
+      alert("Failed to submit prescription. Please check if backend is running.");
+    } finally {
+      setSavingPrescription(false);
+    }
+  };
+
+  const handleDeletePrescription = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this prescription?")) return;
+    try {
+      const res = await deletePrescription(id);
+      if (res.data.success) {
+        fetchPrescriptions();
+      } else {
+        alert(res.data.message || "Failed to delete prescription");
+      }
+    } catch (err) {
+      console.error("Delete prescription error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (patient && patientTab === 'medications') {
+      fetchPrescriptions();
+    }
+  }, [patient, patientTab]);
 
   useEffect(() => {
     if (patient && patientTab === 'history') {
@@ -71,9 +198,10 @@ function RecentPatients({
     }
   };
 
-  const filteredPatients = recentPatientsList.filter(p => 
-    p.name.toLowerCase().includes(localSearch.toLowerCase()) ||
-    p.patient_id.toLowerCase().includes(localSearch.toLowerCase())
+  const activePatientsSource = (internalPatients && internalPatients.length > 0) ? internalPatients : recentPatientsList;
+  const filteredPatients = activePatientsSource.filter(p => 
+    (p?.name || "").toLowerCase().includes(localSearch.toLowerCase()) ||
+    (p?.patient_id || "").toLowerCase().includes(localSearch.toLowerCase())
   );
 
   return (
@@ -88,6 +216,13 @@ function RecentPatients({
               <div className="flex items-center gap-2">
                 <FaAddressCard className="text-[#1a7f8e] text-sm" />
                 <span className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider">Patient Registry Directory</span>
+                <button
+                  onClick={fetchLivePatients}
+                  title="Refresh Patient Records"
+                  className="p-1 text-slate-400 hover:text-[#1a7f8e] bg-transparent border-none cursor-pointer transition-colors"
+                >
+                  <FaSyncAlt className={`text-[10px] ${loadingList ? 'animate-spin text-[#1a7f8e]' : ''}`} />
+                </button>
               </div>
               <button
                 onClick={() => {
@@ -123,7 +258,9 @@ function RecentPatients({
 
             {/* Directory list search and header */}
             <div className="flex items-center justify-between mt-2">
-              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Registry Records ({filteredPatients.length})</span>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                Registry Records ({filteredPatients.length}) {loadingList && <span className="text-[9px] text-teal-600 font-bold ml-1 animate-pulse">Syncing...</span>}
+              </span>
               <div className="relative group w-48">
                 <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs" />
                 <input
@@ -141,7 +278,13 @@ function RecentPatients({
               {filteredPatients.length > 0 ? (
                 filteredPatients.map((p) => {
                   const isSelected = patient && patient.patient_id === p.patient_id;
-                  const firstLetters = p.name ? p.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "PT";
+                  const firstLetters = (p?.name || "PT")
+                    .split(" ")
+                    .filter(Boolean)
+                    .map(n => n[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase() || "PT";
                   return (
                     <div
                       key={p.patient_id}
@@ -165,15 +308,17 @@ function RecentPatients({
                           }`}>
                             {firstLetters}
                           </div>
-                          <span className="text-[10px] text-slate-500 font-mono font-bold block leading-none truncate">{p.patient_id}</span>
+                          <span className="text-[10px] text-slate-500 font-mono font-bold block leading-none truncate flex items-center gap-1">
+                            {p.patient_id}
+                          </span>
                         </div>
                         <span className="text-[9px] bg-slate-100 px-2 py-0.5 rounded-full font-bold text-slate-600 border border-slate-200 shrink-0">
                           {p.age} Y/O
                         </span>
                       </div>
 
-                      {/* Middle Row: Name */}
-                      <div className="w-full mb-2 min-w-0">
+                      {/* Patient name */}
+                      <div className="w-full mb-1.5 min-w-0">
                         <p 
                           className="text-[#1a3b6e] leading-tight font-extrabold" 
                           style={{ 
@@ -187,6 +332,20 @@ function RecentPatients({
                           {p.name}
                         </p>
                       </div>
+
+                      {/* Department request badge */}
+                      {p.appointment_department && (
+                        <div className="flex items-center gap-1 mb-1.5">
+                          <span className="text-[8px] bg-indigo-50 border border-indigo-200 text-indigo-700 font-extrabold px-2 py-0.5 rounded-full uppercase flex items-center gap-1 max-w-full truncate">
+                            🏥 {p.appointment_department}
+                          </span>
+                          {p.status === 'PENDING' && (
+                            <span className="text-[7px] bg-amber-50 border border-amber-300 text-amber-700 font-extrabold px-1.5 py-0.5 rounded-full uppercase animate-pulse shrink-0">
+                              NEW
+                            </span>
+                          )}
+                        </div>
+                      )}
                       
                       <div className="border-t border-slate-100 mt-1 pt-2 flex items-center justify-between text-[9px] font-bold text-slate-500">
                         <span className="flex items-center gap-1">
@@ -300,16 +459,65 @@ function RecentPatients({
                 </button>
               </div>
 
-              {/* Patient Basic Profile Banner */}
-              <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#1a7f8e]/10 to-[#2b6cb0]/10 border border-[#1a7f8e]/20 text-[#1a7f8e] flex items-center justify-center text-sm font-black shadow-inner font-mono">
-                  {patient.name ? patient.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "PT"}
+              {/* Patient Basic Profile Banner with Quick Video Call Trigger */}
+              <div className="flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[#1a7f8e]/10 to-[#2b6cb0]/10 border border-[#1a7f8e]/20 text-[#1a7f8e] flex items-center justify-center text-sm font-black shadow-inner font-mono shrink-0">
+                    {patient.name ? patient.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "PT"}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-[#1a3b6e] text-sm font-extrabold m-0 leading-tight truncate">{patient.name}</h3>
+                    <span className="text-[9.5px] text-slate-500 font-mono font-bold mt-1 block">ID: {patient.patient_id} • {patient.gender} • {patient.age} Y/O</span>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-[#1a3b6e] text-sm font-extrabold m-0 leading-tight truncate">{patient.name}</h3>
-                  <span className="text-[9.5px] text-slate-500 font-mono font-bold mt-1 block">ID: {patient.patient_id} • {patient.gender} • {patient.age} Y/O</span>
-                </div>
+
+                {onStartTeleconsult && (
+                  <button
+                    type="button"
+                    onClick={onStartTeleconsult}
+                    className="btn-pill btn-amber text-[11px] py-1.5 px-3 rounded-full flex items-center gap-1.5 shrink-0 shadow-sm"
+                  >
+                    <FaVideo className="text-[10px]" />
+                    <span>1:1 Video</span>
+                  </button>
+                )}
               </div>
+
+              {patient.status === 'APPROVED' && patient.claimed_by_name && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center gap-2 text-left animate-fadeIn">
+                  <FaCheck className="text-emerald-500 text-xs shrink-0" />
+                  <span className="text-emerald-800 text-[9.5px] font-bold leading-normal">
+                    This patient has been claimed for checkup under the care of: <strong className="text-emerald-950 font-black">{patient.claimed_by_name}</strong>.
+                  </span>
+                </div>
+              )}
+
+              {/* Dynamic Intake Request Pending banner */}
+              {patient.status === 'PENDING' && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-center justify-between gap-3 text-left shadow-sm">
+                  <div className="flex items-start gap-2 min-w-0">
+                    <FaInfoCircle className="text-amber-500 text-sm mt-0.5 shrink-0" />
+                    <div>
+                      <strong className="text-amber-800 text-[10px] font-black uppercase tracking-wider block">
+                        Checkup Request — {patient.appointment_department || "Your Department"}
+                      </strong>
+                      <span className="text-amber-700 text-[9.5px] font-bold block mt-0.5">
+                        <strong>{patient.name}</strong> has requested a {patient.appointment_type || "Routine Checkup"} consultation
+                        {patient.appointment_department ? ` under the ${patient.appointment_department}` : ""}.
+                        Claim this patient to begin coordinated care.
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleApproveIntake}
+                    disabled={approving}
+                    className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-[9.5px] uppercase cursor-pointer border-none shadow-sm transition-all whitespace-nowrap shrink-0"
+                  >
+                    {approving ? "Claiming..." : "Claim Checkup Request"}
+                  </button>
+                </div>
+              )}
 
               {/* Patient Chart Sub Tabs */}
               <div className="flex bg-slate-100 p-0.5 rounded-xl border border-slate-200">
@@ -318,11 +526,12 @@ function RecentPatients({
                     key={tab}
                     type="button"
                     onClick={() => setPatientTab(tab)}
-                    className={`flex-1 py-1.5 text-[8.5px] font-black rounded-lg transition-all cursor-pointer border-none bg-transparent ${
-                      patientTab === tab 
-                        ? "bg-[#1a3b6e] text-white shadow-sm font-extrabold" 
-                        : "text-slate-500 hover:text-slate-700"
-                    }`}
+                    className="flex-1 py-2 text-[10px] font-black rounded-lg transition-all cursor-pointer border-none"
+                    style={{
+                      backgroundColor: patientTab === tab ? '#1a3b6e' : 'transparent',
+                      color: patientTab === tab ? '#ffffff' : '#475569',
+                      fontWeight: patientTab === tab ? '900' : '700'
+                    }}
                   >
                     {tab.charAt(0).toUpperCase() + tab.slice(1)}
                   </button>
@@ -430,22 +639,71 @@ function RecentPatients({
                 )}
 
                 {patientTab === "medications" && (
-                  <div className="flex flex-col gap-2 text-left">
-                    <span className="text-slate-400 text-[8px] font-extrabold uppercase tracking-wider mb-1">Active Prescriptions</span>
-                    <div className="flex items-start gap-2.5 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                      <FaPills className="text-[#2eb37e] text-[10px] shrink-0 mt-0.5" />
-                      <div className="text-[10px]">
-                        <p className="m-0 text-[#1a3b6e] font-extrabold leading-none mb-1">Amoxicillin 500mg</p>
-                        <span className="text-slate-500 text-[8px] font-bold">Instructions: Take 1 capsule three times daily for 5 days</span>
-                      </div>
+                  <div className="flex flex-col gap-3 text-left">
+                    <span className="text-slate-400 text-[8px] font-extrabold uppercase tracking-wider">Active Prescribed Medications</span>
+                    
+                    {/* List of current prescriptions */}
+                    <div className="flex flex-col gap-2 max-h-[140px] overflow-y-auto pr-0.5">
+                      {loadingPrescriptions ? (
+                        <div className="text-center py-4 text-[10px] text-slate-400 font-bold">
+                          Syncing medicines...
+                        </div>
+                      ) : prescriptions.length > 0 ? (
+                        prescriptions.map((med) => (
+                          <div key={med.id} className="flex justify-between items-start bg-slate-50 p-2.5 rounded-lg border border-slate-200 hover:border-[#1a7f8e]/30 transition-all text-left">
+                            <div className="flex items-start gap-2.5 min-w-0">
+                              <FaPills className="text-[#1a7f8e] text-[10px] shrink-0 mt-1" />
+                              <div className="text-[10px] min-w-0">
+                                <p className="m-0 text-[#1a3b6e] font-extrabold leading-none mb-1">{med.medication_name}</p>
+                                <span className="text-slate-500 text-[8px] font-bold block leading-tight">{med.instructions}</span>
+                                <span className="text-slate-400 text-[7px] font-semibold block mt-1">Prescribed by: {med.doctor_name}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePrescription(med.id)}
+                              className="text-[9px] text-red-500 hover:text-red-700 bg-transparent border-none cursor-pointer font-bold shrink-0 ml-2"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-6 text-[10px] text-slate-400 font-bold border border-dashed border-slate-200 rounded-xl">
+                          No medications prescribed yet.
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-start gap-2.5 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                      <FaPills className="text-[#2eb37e] text-[10px] shrink-0 mt-0.5" />
-                      <div className="text-[10px]">
-                        <p className="m-0 text-[#1a3b6e] font-extrabold leading-none mb-1">Cetirizine 10mg</p>
-                        <span className="text-slate-500 text-[8px] font-bold">Instructions: Take 1 tablet once daily at bedtime for 10 days</span>
+
+                    {/* Quick Prescription Form */}
+                    <form onSubmit={handleAddPrescription} className="border-t border-slate-100 pt-3 flex flex-col gap-2.5">
+                      <span className="text-slate-400 text-[8px] font-extrabold uppercase tracking-wider block">Prescribe New Medication</span>
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          placeholder="Medication Name (e.g. Amlodipine 5mg)"
+                          value={newMedName}
+                          onChange={(e) => setNewMedName(e.target.value)}
+                          className="h-8 px-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[#1a1a2e] text-[10px] outline-none focus:border-[#1a7f8e] font-bold"
+                          required
+                        />
+                        <input
+                          type="text"
+                          placeholder="Instructions (e.g. 1 tab daily)"
+                          value={newMedInstructions}
+                          onChange={(e) => setNewMedInstructions(e.target.value)}
+                          className="h-8 px-2.5 rounded-lg bg-slate-50 border border-slate-200 text-[#1a1a2e] text-[10px] outline-none focus:border-[#1a7f8e] font-bold"
+                          required
+                        />
                       </div>
-                    </div>
+                      <button
+                        type="submit"
+                        disabled={savingPrescription}
+                        className="h-8 rounded-lg bg-[#1a3b6e] text-white hover:bg-[#15305b] font-extrabold text-[9px] uppercase cursor-pointer transition-colors shadow-sm disabled:opacity-50"
+                      >
+                        {savingPrescription ? "Adding..." : "Prescribe Medication"}
+                      </button>
+                    </form>
                   </div>
                 )}
 

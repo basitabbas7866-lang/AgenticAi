@@ -12,6 +12,8 @@ function TranscriptReview({
   speakerData
 }) {
   const navigate = useNavigate();
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const doctorName = loggedInUser.name || "Dr. Sarah Jenkins";
 
   if (!conversation.trim() && !transcribing) return null;
 
@@ -74,7 +76,7 @@ function TranscriptReview({
                       }`}
                     >
                       <span className={`block text-[8px] font-extrabold uppercase tracking-wider mb-1 ${isDoc ? "text-amber-300" : "text-[#1a7f8e]"}`}>
-                        {isDoc ? "Dr. Sarah Jenkins" : "Patient"}
+                        {isDoc ? doctorName : (patient?.name || "Patient")}
                       </span>
                       <p className="font-mono m-0 leading-relaxed break-words">{bubble.text}</p>
                     </div>

@@ -27,6 +27,7 @@ import { initialPatientsList, initialConsultationsList } from "../components/das
 import PatientJourney from "../components/dashboard/PatientJourney";
 import AttentionRequired from "../components/dashboard/AttentionRequired";
 import CoordinationReviewQueue from "../components/dashboard/CoordinationReviewQueue";
+import TeleconsultationModal from "../components/dashboard/TeleconsultationModal";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -36,6 +37,15 @@ function DashboardPage() {
 
   const [activeTab, setActiveTab] = useState(role === "patient" ? "journey" : "dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isTeleconsultOpen, setIsTeleconsultOpen] = useState(false);
+
+  // Authentication guard: ensure user is signed in
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user) {
+      navigate("/auth");
+    }
+  }, [navigate]);
 
   // Core clinical states
   const [conversation, setConversation] = useState("");
@@ -58,6 +68,8 @@ function DashboardPage() {
     recordingTime,
     audioBlob,
     audioLevels,
+    transcriptText,
+    setTranscriptText,
     startRecording: triggerStartRecording,
     pauseRecording,
     resumeRecording,
@@ -68,14 +80,14 @@ function DashboardPage() {
   const startRecording = () => triggerStartRecording(patient);
 
   // Pre-seeded clinical datasets
-  const [recentPatients, setRecentPatients] = useState(initialPatientsList);
+  const [recentPatients, setRecentPatients] = useState([]);
   const [consultations, setConsultations] = useState(initialConsultationsList);
 
   const transcribeAudio = async () => {
     if (!audioBlob) return;
     setTranscribing(true);
     try {
-      const res = await api.transcribeAudio(audioBlob);
+      const res = await api.transcribeAudio(audioBlob, patient?.patient_id || "", transcriptText);
       setLanguage(res.data.language || "");
       setSpeakerData(res.data.speakers || []);
 
@@ -110,14 +122,25 @@ function DashboardPage() {
     try {
       const payload = {
         ...newPatient,
-        age: parseInt(newPatient.age) || 0
+        age: parseInt(newPatient.age) || 0,
+        assigned_doctor_id: role === "doctor" ? loggedInUser.id : null
       };
       const res = await api.createPatient(payload);
-      const p = { ...payload, patient_id: res.data.patient_id };
-      setPatient(p);
-      setRecentPatients(prev => [p, ...prev]);
-      setShowCreateForm(false);
-      setNewPatient({ name: "", age: "", gender: "", phone: "" });
+      if (res.data.success) {
+        const p = { ...payload, patient_id: res.data.patient_id, status: "PENDING" };
+        setPatient(p);
+        setPatientId(p.patient_id);
+        setShowCreateForm(false);
+        setNewPatient({ name: "", age: "", gender: "", phone: "" });
+        
+        // Sync fresh patient registry list from database
+        const fetchId = role === "doctor" ? loggedInUser.id : null;
+        api.getPatients(fetchId).then(r => {
+          if (r.data && r.data.success && r.data.patients) {
+            setRecentPatients(r.data.patients);
+          }
+        });
+      }
     } catch (err) { console.log(err); }
   };
 
@@ -152,11 +175,37 @@ function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!patient && recentPatients?.length > 0) {
-      setPatient(recentPatients[0]);
-      setPatientId(recentPatients[0].patient_id);
-    }
-  }, [recentPatients, patient]);
+    const fetchId = role === "doctor" ? loggedInUser.id : null;
+    api.getPatients(fetchId)
+      .then(res => {
+        if (res.data && res.data.success && Array.isArray(res.data.patients)) {
+          setRecentPatients(res.data.patients);
+          
+          if (role === "patient" && loggedInUser.name) {
+            const matched = res.data.patients.find(p => (p?.name || "").toLowerCase().includes(loggedInUser.name.toLowerCase()));
+            if (matched) {
+              setPatient(matched);
+              setPatientId(matched.patient_id);
+              return;
+            }
+          }
+          
+          setPatient(prev => {
+            if (prev) {
+              const updated = res.data.patients.find(x => x.patient_id === prev.patient_id);
+              return updated || prev;
+            }
+            return res.data.patients.length > 0 ? res.data.patients[0] : null;
+          });
+          
+          setPatientId(prev => {
+            if (prev) return prev;
+            return res.data.patients.length > 0 ? res.data.patients[0].patient_id : "";
+          });
+        }
+      })
+      .catch(err => console.log("Failed to load patients from database:", err));
+  }, [activeTab]);
 
 
 
@@ -305,6 +354,7 @@ function DashboardPage() {
                 stopRecording={stopRecording}
                 transcribeAudio={transcribeAudio}
                 formatTime={formatTime}
+                transcriptText={transcriptText}
               />
 
               {/* Live Transcript Bubble Boards */}
@@ -321,9 +371,74 @@ function DashboardPage() {
             </div>
           )}
 
+          {activeTab === "teleconsult" && (
+            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+              <div className="card-clinical p-8 max-w-3xl mx-auto text-center flex flex-col items-center gap-6 shadow-md bg-white border border-slate-200 rounded-2xl">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#1a7f8e] to-[#1a3b6e] text-white flex items-center justify-center text-3xl shadow-xl border-4 border-slate-100">
+                  <FaUserMd />
+                </div>
+                
+                <div>
+                  <span className="badge-clinical badge-teal mb-2">
+                    WebRTC 1080p HD Live Room
+                  </span>
+                  <h2 className="text-2xl font-extrabold text-[#1a3b6e] tracking-tight">
+                    {role === "patient" ? "Join 1:1 Video Consultation with Dr. Sarah" : "1:1 Doctor-Patient Teleconsultation"}
+                  </h2>
+                  <p className="text-slate-500 text-xs sm:text-sm max-w-lg mt-2 font-medium leading-relaxed">
+                    Connect directly with real-time video, dual camera feeds, patient vitals synchronization, and automatic ambient AI transcription for structured charting.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full max-w-lg text-left">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase block">Active Patient</span>
+                    <span className="text-xs font-bold text-[#1a3b6e] truncate block">{patient?.name || "David Miller"}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase block">Chart ID</span>
+                    <span className="text-xs font-bold text-[#1a3b6e] truncate block">{patient?.patient_id || "P1005"}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase block">Encryption</span>
+                    <span className="text-xs font-bold text-emerald-600 truncate block">HIPAA TLS 1.3</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (role === "patient" && patient?.status !== "APPROVED") {
+                      alert("Your intake request is pending approval. Once the doctor approves your request on their portal, you can join the call.");
+                      return;
+                    }
+                    setIsTeleconsultOpen(true);
+                  }}
+                  disabled={role === "patient" && patient?.status !== "APPROVED"}
+                  className="btn-pill btn-amber text-sm px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl flex items-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FaUserMd className="text-base" />
+                  <span>{role === "patient" ? (patient?.status === "APPROVED" ? "Enter Video Consultation" : "Consultation Pending Approval") : "Launch Teleconsultation Room"}</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === "patients" && (
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full">
-              <RecentPatients patient={patient} setPatient={setPatient} patientId={patientId} setPatientId={setPatientId} showCreateForm={showCreateForm} setShowCreateForm={setShowCreateForm} newPatient={newPatient} setNewPatient={setNewPatient} onSearchPatient={handleSearchPatient} onCreatePatient={handleCreatePatient} recentPatientsList={recentPatients} />
+              <RecentPatients 
+                patient={patient} 
+                setPatient={setPatient} 
+                patientId={patientId} 
+                setPatientId={setPatientId} 
+                showCreateForm={showCreateForm} 
+                setShowCreateForm={setShowCreateForm} 
+                newPatient={newPatient} 
+                setNewPatient={setNewPatient} 
+                onSearchPatient={handleSearchPatient} 
+                onCreatePatient={handleCreatePatient} 
+                recentPatientsList={recentPatients}
+                onStartTeleconsult={() => setIsTeleconsultOpen(true)}
+              />
             </motion.div>
           )}
 
@@ -334,7 +449,7 @@ function DashboardPage() {
           )}
 
           {activeTab === "profile" && (
-            <ProfileWidget />
+            <ProfileWidget patient={patient} />
           )}
 
           {activeTab === "journey" && (
@@ -352,6 +467,23 @@ function DashboardPage() {
         </div>
       </div>
       </div>
+
+      {/* 1:1 Teleconsultation Video Room Modal */}
+      <TeleconsultationModal
+        isOpen={isTeleconsultOpen}
+        onClose={() => setIsTeleconsultOpen(false)}
+        patient={patient}
+        role={role}
+        onGenerateSoap={(patientObj, conversationText) => {
+          navigate("/soap-generation", {
+            state: {
+              patient: patientObj || patient || { patient_id: "P1005", name: "David Miller", age: 42, gender: "Male", phone: "N/A" },
+              conversation: conversationText,
+              language: "en-US"
+            }
+          });
+        }}
+      />
     </div>
   );
 }

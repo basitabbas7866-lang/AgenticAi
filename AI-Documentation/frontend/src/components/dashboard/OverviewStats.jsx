@@ -12,6 +12,10 @@ const itemVariants = {
 };
 
 function OverviewStats({ patient, isRecording, isPaused, audioBlob }) {
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const fullName = loggedInUser.name || loggedInUser.email?.split("@")[0] || "Dr. Sarah Jenkins";
+  const userRole = loggedInUser.role || "doctor";
+
   return (
     <motion.div
       variants={containerVariants}
@@ -28,8 +32,12 @@ function OverviewStats({ patient, isRecording, isPaused, audioBlob }) {
         </div>
         <div className="min-w-0">
           <span className="text-[10px] text-[#1a7f8e] font-extrabold uppercase tracking-wider block">Clinical Station</span>
-          <h2 className="text-[#1a3b6e] text-base font-extrabold m-0 leading-tight mt-1">Sarah Jenkins, M.D.</h2>
-          <p className="text-slate-500 text-[10px] font-bold mt-1 uppercase tracking-wider">General Practitioner | Node Online</p>
+          <h2 className="text-[#1a3b6e] text-base font-extrabold m-0 leading-tight mt-1">
+            {userRole === "doctor" ? `Dr. ${fullName}` : fullName}
+          </h2>
+          <p className="text-slate-500 text-[10px] font-bold mt-1 uppercase tracking-wider">
+            {userRole === "doctor" ? "General Practitioner" : userRole === "nurse" ? "Registered Nurse" : "Patient Portal"} | Node Online
+          </p>
         </div>
       </motion.div>
 

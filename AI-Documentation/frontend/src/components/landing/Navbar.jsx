@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaHome, FaTachometerAlt, FaUserPlus, FaSignInAlt, FaMobileAlt } from "react-icons/fa";
+import { FaHome, FaTachometerAlt, FaUserPlus, FaSignInAlt, FaMobileAlt, FaVideo } from "react-icons/fa";
 
 function Navbar({ onEnterApp }) {
   const [scrolled, setScrolled] = useState(false);
@@ -33,9 +33,9 @@ function Navbar({ onEnterApp }) {
         </div>
 
         <div className="flex items-center gap-4 text-[11px] opacity-90">
-          <a href="#workflow" className="hover:underline text-white flex items-center gap-1">
+          <button onClick={onEnterApp} className="hover:underline text-white flex items-center gap-1 bg-transparent border-none cursor-pointer">
             <FaMobileAlt className="text-amber-400" /> App Portal
-          </a>
+          </button>
           <span className="opacity-40">|</span>
           <a href="#contact" className="hover:underline text-white">FAQs</a>
           <span className="opacity-40">|</span>
@@ -55,7 +55,7 @@ function Navbar({ onEnterApp }) {
           </span>
         </a>
 
-        {/* Desktop Links & ORS Yellow Action Button */}
+        {/* Desktop Links & Action Buttons */}
         <div className="hidden lg:flex items-center gap-6">
           <a
             href="#home"
@@ -78,7 +78,7 @@ function Navbar({ onEnterApp }) {
           {/* ORS Yellow Register / Login CTA Button */}
           <button
             onClick={onEnterApp}
-            className="btn-pill btn-amber text-xs px-5 py-2 shadow-sm ml-2 flex items-center gap-2"
+            className="btn-pill btn-amber text-xs px-5 py-2 shadow-sm flex items-center gap-2"
           >
             <FaSignInAlt className="text-sm" />
             <span>Register / Login</span>
