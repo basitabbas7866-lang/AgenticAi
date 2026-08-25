@@ -319,7 +319,7 @@ function PatientJourney({ patient }) {
         <FaInfoCircle className="text-slate-600 text-3xl mb-4" />
         <h3 className="text-[#1a3b6e] text-base font-black">No Active Patient Selected</h3>
         <p className="text-slate-500 text-xs mt-2 max-w-sm">
-          Please select a patient from the Clinical Workspace or register a new chart in the Patient Registry.
+          Please select a patient from the Create SOAP Note workspace or find them in the Patients Directory.
         </p>
       </div>
     );
@@ -400,7 +400,7 @@ function PatientJourney({ patient }) {
               onClick={() => {
                 fetchAllData();
               }}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 border border-slate-200 text-slate-600 hover:text-white transition-colors cursor-pointer"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition-colors cursor-pointer"
             >
               Refresh Workstation
             </button>

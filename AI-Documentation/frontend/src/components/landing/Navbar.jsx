@@ -20,38 +20,14 @@ function Navbar({ onEnterApp }) {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-md">
-      {/* ── Top Utility Header (ORS Navy Bar) ──────────────── */}
-      <div className="w-full bg-[#1a3b6e] text-white text-xs py-1.5 px-4 sm:px-8 flex flex-wrap items-center justify-between gap-2 border-b border-[#00909e]/30">
-        <div className="flex items-center gap-3 font-medium">
-          <span className="bg-[#00909e] text-white px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider">
-            Medical Care
-          </span>
-          <span className="hidden md:inline tracking-wide opacity-90">
-            A Digital Health AI Initiative • Smart Patient &amp; Clinical Portal
-          </span>
-        </div>
-
-        <div className="flex items-center gap-4 text-[11px] opacity-90">
-          <button onClick={onEnterApp} className="hover:underline text-white flex items-center gap-1 bg-transparent border-none cursor-pointer">
-            <FaMobileAlt className="text-amber-400" /> App Portal
-          </button>
-          <span className="opacity-40">|</span>
-          <a href="#contact" className="hover:underline text-white">FAQs</a>
-          <span className="opacity-40">|</span>
-          <a href="#contact" className="hover:underline text-white">Contact</a>
-          <span className="opacity-40">|</span>
-          <span className="bg-white/10 px-1.5 py-0.5 rounded text-[10px] font-semibold">English</span>
-        </div>
-      </div>
-
+    <header className="absolute top-0 left-0 right-0 z-50 w-full bg-white shadow-md">
       {/* ── Main Navbar ────────────────────────────────────── */}
-      <div className="w-full max-w-[1360px] mx-auto px-4 sm:px-8 py-2.5 flex items-center justify-between">
+      <div className="w-full max-w-[1360px] mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between">
         {/* Brand logo (CareWeave Logo) */}
         <a href="#home" className="flex items-center gap-3 no-underline group">
           <img src="/logo.jpg" alt="CareWeave Logo" className="h-9 w-auto object-contain transition-transform group-hover:scale-105" />
-          <span className="text-[10px] text-[#4a5568] font-semibold tracking-wider uppercase hidden sm:inline border-l border-slate-200 pl-3">
-            Online Patient &amp; Clinical System
+          <span className="text-[10px] text-[#4a5568] font-bold tracking-wider uppercase hidden md:inline border-l border-slate-200 pl-3">
+            AI Coordination Platform
           </span>
         </a>
 

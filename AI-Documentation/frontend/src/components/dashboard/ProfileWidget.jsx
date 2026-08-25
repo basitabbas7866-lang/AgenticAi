@@ -41,6 +41,25 @@ function ProfileWidget({ patient }) {
   const [patientStatus, setPatientStatus] = useState("PENDING");
   const [lockedDocInfo, setLockedDocInfo] = useState(null);
   const [isLockedByPrescription, setIsLockedByPrescription] = useState(false);
+  // Custom doctor name input state
+  const [customDoctorName, setCustomDoctorName] = useState("");
+  const [customDoctors, setCustomDoctors] = useState([]);
+
+  // Combine custom + registered doctors for dropdown; custom entries appear first
+  const allDoctors = [
+    ...customDoctors,
+    ...doctors.filter(d => !customDoctors.some(c => c.id === d.id))
+  ];
+
+  const handleAddCustomDoctor = () => {
+    const trimmed = customDoctorName.trim();
+    if (!trimmed) return;
+    const customId = `custom_${Date.now()}`;
+    const newDoc = { id: customId, name: trimmed, specialty: "External / Custom", isCustom: true };
+    setCustomDoctors(prev => [newDoc, ...prev]);
+    setSelectedDoctorId(customId);
+    setCustomDoctorName("");
+  };
 
   // Check for prescriptions and enforce specialty lock
   useEffect(() => {
@@ -149,7 +168,20 @@ function ProfileWidget({ patient }) {
     if (!selectedDoctorId) return;
     setAssigning(true);
     try {
-      const targetId = patient?.patient_id || "P1010"; // Rajesh Kuamr
+      const targetId = patient?.patient_id || "P1010";
+
+      // Check if it's a custom (manually entered) doctor
+      const customDoc = customDoctors.find(d => d.id === selectedDoctorId);
+      if (customDoc) {
+        // Custom doctor: no backend API call, just set local state
+        setAssignedDocInfo({ id: customDoc.id, name: customDoc.name, specialty: "External / Custom" });
+        setPatientStatus("PENDING");
+        alert(`Consultation request noted for external doctor "${customDoc.name}". Note: External doctors must be manually coordinated outside the system.`);
+        setAssigning(false);
+        return;
+      }
+
+      // Registered doctor: call backend API
       await assignDoctor(targetId, selectedDoctorId);
       setPatientStatus("PENDING");
       const matched = doctors.find(d => String(d.id) === String(selectedDoctorId));
@@ -164,8 +196,9 @@ function ProfileWidget({ patient }) {
   };
 
   if (userRole === "patient") {
-    const isAssigned = !!selectedDoctorId || !!assignedDocInfo;
-    const isApproved = patientStatus === "APPROVED";
+    // isAssigned = true only when doctor has been actually submitted/assigned, NOT on dropdown selection
+    const isAssigned = !!assignedDocInfo || !!patient?.assigned_doctor_id;
+    const isApproved = patientStatus === "APPROVED" || patient?.status === "APPROVED";
 
     return (
       <motion.div
@@ -228,19 +261,54 @@ function ProfileWidget({ patient }) {
                     Select a registered specialist from the list below based on their specialty domain to request consultation and unlock your care plan.
                   </p>
                   
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     <label className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">Select Specialist Doctor</label>
+
+                    {/* Custom doctor name input row */}
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="text"
+                        value={customDoctorName}
+                        onChange={e => setCustomDoctorName(e.target.value)}
+                        onKeyDown={e => e.key === "Enter" && handleAddCustomDoctor()}
+                        placeholder="Or type doctor name manually..."
+                        className="flex-1 h-9 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold outline-none focus:border-[#1a7f8e] transition-all placeholder-slate-400"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddCustomDoctor}
+                        disabled={!customDoctorName.trim()}
+                        className="h-9 px-4 rounded-xl bg-[#1a7f8e] text-white text-[10px] font-extrabold uppercase tracking-wide cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#166d7a] transition-all active:scale-95 shrink-0"
+                      >
+                        + Add
+                      </button>
+                    </div>
+
+                    {/* Dropdown — custom doctors appear at top */}
                     <select
                       value={selectedDoctorId}
                       onChange={(e) => setSelectedDoctorId(e.target.value)}
                       className="h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold outline-none focus:border-[#1a7f8e]"
                     >
                       <option value="">-- Choose registered doctor --</option>
-                      {doctors.map(doc => (
-                        <option key={doc.id} value={doc.id}>
-                          {doc.name} (Specialty: {doc.specialty || "General Medicine"})
-                        </option>
-                      ))}
+                      {customDoctors.length > 0 && (
+                        <optgroup label="─── Custom / External Doctors">
+                          {customDoctors.map(doc => (
+                            <option key={doc.id} value={doc.id}>
+                              {doc.name} (External)
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {doctors.length > 0 && (
+                        <optgroup label="─── Registered Specialists">
+                          {doctors.map(doc => (
+                            <option key={doc.id} value={doc.id}>
+                              {doc.name} (Specialty: {doc.specialty || "General Medicine"})
+                            </option>
+                          ))}
+                        </optgroup>
+                      )}
                     </select>
                   </div>
 
@@ -264,7 +332,7 @@ function ProfileWidget({ patient }) {
                     <span className="text-[9.5px] text-amber-700 font-semibold block leading-relaxed">
                       1. Click <strong>Sign Out</strong>.<br/>
                       2. Log in as a Doctor with email: <strong>{assignedDocInfo ? assignedDocInfo.email : "doctor@careweave.com"}</strong>.<br/>
-                      3. Select your patient in the Patient Registry directory.<br/>
+                      3. Select your patient in the Patients Directory.<br/>
                       4. Click the <strong>Approve Intake</strong> button on the chart to start consultation.
                     </span>
                   </div>

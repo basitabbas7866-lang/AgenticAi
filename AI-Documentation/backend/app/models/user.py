@@ -10,3 +10,4 @@ class User(Base):
     password = Column(String, nullable=False)  # Stored as plain text for mock/prototype simplicity
     role = Column(String, nullable=False)  # doctor, nurse, patient
     specialty = Column(String, nullable=True)  # medical specialty for doctors
+    patient_id = Column(String, nullable=True)  # linked Patient record ID for patient-role users

@@ -159,10 +159,9 @@ function Footer() {
             </h4>
             
             <div className="text-xs text-slate-300 space-y-2 leading-relaxed mb-6 font-medium">
-              <p>Ward No. 5, Digital Health Block,</p>
-              <p>AIIMS Institutional Area, Ansari Nagar,</p>
-              <p>New Delhi, Delhi, India</p>
-              <p>Pin-Code: 110029</p>
+              <p>CareWeave Health Innovation Hub,</p>
+              <p>100 Tech Park Drive, Suite 400,</p>
+              <p>Boston, MA 02111, USA</p>
               <p className="pt-1">
                 <a href="mailto:careweave.health@gmail.com" className="text-slate-300 hover:text-[#00c988] no-underline transition-colors">
                   careweave.health@gmail.com
@@ -210,7 +209,7 @@ function Footer() {
         <div className="max-w-[1360px] mx-auto flex items-center justify-between">
           <div className="text-xs text-slate-400 text-left font-normal">
             &copy; {new Date().getFullYear()} CareWeave Health AI Foundation. All Rights Reserved. Developed by{" "}
-            <span className="text-[#00c988] font-semibold">Digital India &amp; Ayushman Bharat Mission</span>
+            <span className="text-[#00c988] font-semibold">CareWeave Healthcare AI Core Team</span>
           </div>
 
           {/* Green Scroll to Top Button */}

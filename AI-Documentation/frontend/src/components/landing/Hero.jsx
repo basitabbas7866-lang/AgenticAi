@@ -35,14 +35,10 @@ const Hero = ({ onEnterApp }) => {
 
   return (
     <section className="pt-28 pb-10 bg-[#f5f7fa]" id="home">
-      {/* ── ORS Full-Width Blue/Teal Banner Container ──────── */}
+      {/* ── CareWeave Full-Width Banner Container ──────── */}
       <div className="max-w-[1360px] mx-auto px-4 sm:px-8">
-        {/* Sub-header Announcement text */}
-        <div className="text-center py-2 px-4 mb-4 text-[#1a3b6e] font-serif text-sm md:text-base font-semibold leading-snug">
-          Online Patient Registration &amp; Clinical Documentation System (ORS AI) is a Digital India initiative providing online access to hospital services, SOAP notes, and Ayushman Bharat Health Accounts.
-        </div>
-
-        {/* ── Main Blue Hero Banner (ORS Style) ──────────────── */}
+        
+        {/* ── Main Blue Hero Banner (CareWeave Style) ──────────────── */}
         <div className="relative rounded-2xl bg-gradient-to-r from-[#1c4d8d] via-[#1a65a3] to-[#2196b6] p-6 sm:p-10 text-white shadow-xl overflow-hidden min-h-[420px] flex flex-col justify-between">
           {/* Subtle Stethoscope / Medical Line Overlay Background */}
           <div className="absolute inset-0 pointer-events-none opacity-10">
@@ -55,11 +51,11 @@ const Hero = ({ onEnterApp }) => {
             {/* Banner Left Column: Text & Yellow CTA */}
             <div className="lg:col-span-7 flex flex-col items-start text-left">
               <span className="inline-flex items-center gap-2 bg-[#00909e] text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider mb-4 border border-white/20">
-                <FaStethoscope className="text-amber-300" /> Digital Health Portal
+                <FaStethoscope className="text-amber-300" /> AI Care Coordination Portal
               </span>
 
               <h1 className="font-serif text-2xl sm:text-4xl xl:text-5xl font-normal leading-tight text-white mb-5 tracking-wide">
-                Now getting an <span className="font-bold text-amber-300">OPD appointment, lab reports</span> and patient journey tracking has become <span className="underline decoration-amber-400 decoration-2 underline-offset-4">online and easy</span>.
+                Now tracking your <span className="font-bold text-amber-300">patient journey, ambient SOAP notes</span> and care coordination has become <span className="underline decoration-amber-400 decoration-2 underline-offset-4">online and easy</span>.
               </h1>
 
               {/* Yellow Register/Login Button */}
@@ -76,7 +72,7 @@ const Hero = ({ onEnterApp }) => {
                   href="#workflow"
                   className="text-white hover:text-amber-200 text-xs font-bold underline underline-offset-4 flex items-center gap-1.5 px-2 py-1"
                 >
-                  <FaHospital /> View Facilities
+                  <FaHospital /> Explore Workflows
                 </a>
               </div>
             </div>
@@ -122,14 +118,14 @@ const Hero = ({ onEnterApp }) => {
             </div>
           </div>
 
-          {/* ── Bottom 3 Primary Action Pills (ORS Style) ──────── */}
+          {/* ── Bottom 3 Primary Action Pills (CareWeave Style) ──────── */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 relative z-10 pt-6 border-t border-white/20">
             <button
               onClick={onEnterApp}
               className="btn-pill bg-[#2b6cb0] hover:bg-[#1a4971] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20"
             >
               <FaCalendarCheck className="text-amber-300 text-base" />
-              <span>Book Appointment</span>
+              <span>Book &amp; Coordinate Appointments</span>
             </button>
 
             <button
@@ -137,15 +133,15 @@ const Hero = ({ onEnterApp }) => {
               className="btn-pill bg-[#00909e] hover:bg-[#007a87] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow-lg border border-amber-300 ring-2 ring-amber-400/50 active:scale-95"
             >
               <FaVideo className="text-amber-300 text-base" />
-              <span className="font-extrabold">1:1 Video Teleconsultation</span>
+              <span className="font-extrabold">1:1 Video Consultations</span>
             </button>
 
             <button
               onClick={onEnterApp}
               className="btn-pill bg-[#107c74] hover:bg-[#0c615b] text-white py-3 px-5 rounded-full flex items-center justify-center gap-2.5 shadow border border-white/20"
             >
-              <FaQrcode className="text-amber-300 text-base" />
-              <span>Scan and Share</span>
+              <FaBrain className="text-amber-300 text-base" />
+              <span>Monitor Care Timelines</span>
             </button>
           </div>
         </div>

@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+pydantic
+SQLAlchemy
+sarvamai
+python-dotenv
+python-multipart
+groq
+ollama
+langchain-chroma
+langchain-core
+langchain-huggingface
+langchain-community
+langchain-text-splitters
+pypdf
+sentence-transformers

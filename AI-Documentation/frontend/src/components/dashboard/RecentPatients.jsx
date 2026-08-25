@@ -215,7 +215,7 @@ function RecentPatients({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <FaAddressCard className="text-[#1a7f8e] text-sm" />
-                <span className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider">Patient Registry Directory</span>
+                <span className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider">Patients Directory</span>
                 <button
                   onClick={fetchLivePatients}
                   title="Refresh Patient Records"

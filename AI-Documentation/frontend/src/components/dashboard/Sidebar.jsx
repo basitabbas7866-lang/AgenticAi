@@ -35,17 +35,23 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
         .toUpperCase() || 'CW';
 
     const menuItems = role === 'patient' ? [
-        { id: 'teleconsult', label: '1:1 Teleconsultation', helper: 'Join live video room with Doctor', icon: FaVideo },
-        { id: 'journey', label: 'My Care Journey', helper: 'Your timeline & clinical updates', icon: FaHospital },
-        { id: 'profile', label: 'My Patient Profile', helper: 'Clinical parameters & records', icon: FaCog }
-    ] : [
-        { id: 'dashboard', label: 'Clinical Workspace', helper: 'Dictation & SOAP framework', icon: FaMicrophone },
-        { id: 'teleconsult', label: '1:1 Teleconsultation', helper: 'HD WebRTC Doctor-Patient Room', icon: FaVideo },
-        { id: 'patients', label: 'Patient Registry', helper: 'Search & register charts', icon: FaUsers },
-        { id: 'journey', label: 'Care Journey', helper: 'Patient timeline & events', icon: FaHospital },
-        { id: 'reports', label: 'Consultation Reports', helper: 'Review saved encounters', icon: FaRegFileAlt },
-        { id: 'reviews', label: 'Review Queue', helper: 'Awaiting human decisions', icon: FaClipboardCheck },
-        { id: 'profile', label: 'Practitioner Profile', helper: 'Clinic & compliance settings', icon: FaCog }
+        { id: 'teleconsult', label: 'Online Consultation', helper: 'Start video call with doctor', icon: FaVideo },
+        { id: 'journey', label: 'My Medical History', helper: 'View my visits, tests & timeline', icon: FaHospital },
+        { id: 'profile', label: 'My Profile & Records', helper: 'View personal details & vitals', icon: FaCog }
+    ] : role === 'nurse' ? [
+        { id: 'dashboard', label: 'Nurse Dashboard', helper: 'Track patient alerts & updates', icon: FaStethoscope },
+        { id: 'patients', label: 'Patients Directory', helper: 'Find or add patient charts', icon: FaUsers },
+        { id: 'journey', label: 'Patient Timeline', helper: 'Track visits, labs & history', icon: FaHospital },
+        { id: 'reviews', label: 'Pending Approvals', helper: 'Review & approve AI suggestions', icon: FaClipboardCheck },
+        { id: 'profile', label: 'My Profile & Settings', helper: 'Manage account & clinic info', icon: FaCog }
+    ] : [ // doctor
+        { id: 'dashboard', label: 'Create SOAP Note', helper: 'Generate SOAP from Audio/Text', icon: FaMicrophone },
+        { id: 'teleconsult', label: 'Online Consultation', helper: 'Start video call with patient', icon: FaVideo },
+        { id: 'patients', label: 'Patients Directory', helper: 'Find or add patient charts', icon: FaUsers },
+        { id: 'journey', label: 'Patient Timeline', helper: 'Track visits, labs & history', icon: FaHospital },
+        { id: 'reports', label: 'Saved Reports', helper: 'View completed patient notes', icon: FaRegFileAlt },
+        { id: 'reviews', label: 'Pending Approvals', helper: 'Review & approve AI suggestions', icon: FaClipboardCheck },
+        { id: 'profile', label: 'My Profile & Settings', helper: 'Manage account & clinic info', icon: FaCog }
     ];
 
     const handleTabClick = (tabId) => {
@@ -128,11 +134,6 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
                                         isActive ? 'text-[#1a7f8e]' : 'text-slate-600 group-hover:text-[#1a7f8e]'
                                     }`}>
                                         {item.label}
-                                    </span>
-                                    <span className={`block text-[10px] mt-0.5 truncate transition-colors ${
-                                        isActive ? 'text-[#1a7f8e]/80' : 'text-slate-400 group-hover:text-[#1a7f8e]/80'
-                                    }`}>
-                                        {item.helper}
                                     </span>
                                 </div>
 

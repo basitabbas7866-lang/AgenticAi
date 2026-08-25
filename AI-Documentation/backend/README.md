@@ -216,8 +216,10 @@ SQLite path, upload path, and Sarvam output path are relative:
 ```powershell
 cd backend
 ..\venv\Scripts\Activate.ps1
-uvicorn app.main:app --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+
+> **LAN / Other Laptop Access**: To access from another laptop on the same Wi-Fi, open `http://<YOUR_IP>:5174/` (e.g. `http://192.168.0.111:5174/`).
 
 Useful URLs:
 

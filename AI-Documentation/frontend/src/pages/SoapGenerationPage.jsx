@@ -22,19 +22,15 @@ function SoapGenerationPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Load state from router or use premium mock defaults as fallback
-  const initialData = location.state || {
-    patient: {
-      patient_id: "P1001",
-      name: "Eleanor Vance",
-      age: "64",
-      gender: "Female",
-      phone: "+1 (555) 019-2834"
-    },
-    conversation: "Patient presents with a 3-day history of localized left lower quadrant abdominal pain, sharp, rated 6/10, worse after meals. Denies fever or chills. Stool is normal. History of diverticulosis. BP: 138/88 mmHg, HR: 72 bpm.",
-    language: "hi-IN",
-    speakerData: []
-  };
+  // Guard: redirect to dashboard if navigated directly without patient state
+  const initialData = location.state;
+  useEffect(() => {
+    if (!initialData) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [initialData, navigate]);
+
+  if (!initialData) return null;
 
   const { patient, conversation, language } = initialData;
 
@@ -49,6 +45,134 @@ function SoapGenerationPage() {
   const [whatsappSent, setWhatsappSent] = useState(false);
   const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
   const [whatsappNumber, setWhatsappNumber] = useState(patient?.phone || "+91 98765 43210");
+
+  const [activeDocumentTab, setActiveDocumentTab] = useState("clinical");
+  const [coordinationActions, setCoordinationActions] = useState([]);
+  const [checklistApproved, setChecklistApproved] = useState(false);
+  const [syncingActions, setSyncingActions] = useState(false);
+
+  const getPatientLetterText = () => {
+    const isCardiac = (conversation || "").toLowerCase().includes("seene") || (conversation || "").toLowerCase().includes("chest") || (conversation || "").toLowerCase().includes("breath") || (conversation || "").toLowerCase().includes("saans");
+    const isFever = (conversation || "").toLowerCase().includes("bukhar") || (conversation || "").toLowerCase().includes("fever") || (conversation || "").toLowerCase().includes("cough") || (conversation || "").toLowerCase().includes("gale") || (conversation || "").toLowerCase().includes("cold");
+    const isAbdominal = (conversation || "").toLowerCase().includes("pet") || (conversation || "").toLowerCase().includes("abdomen") || (conversation || "").toLowerCase().includes("diverticulosis") || (conversation || "").toLowerCase().includes("pain");
+
+    if (isCardiac) {
+      return (
+        `Dear Patient,\n\n` +
+        `Thank you for visiting us today. Based on our clinical discussion, here is a simplified summary of your care plan:\n\n` +
+        `• WHAT WE FOUND: You are experiencing mild chest tightness and discomfort during fast walking, which improves after resting. We are actively evaluating this for stable angina.\n\n` +
+        `• MEDICATIONS:\n` +
+        `  - Continue Amlodipine 5mg once daily as prescribed for blood pressure.\n` +
+        `  - Use Sorbitrate 5mg under the tongue strictly as needed for acute chest tightness.\n\n` +
+        `• HEALTH GUIDELINES & EXERCISE:\n` +
+        `  - Rest immediately if you feel chest tightness.\n` +
+        `  - Avoid high-intensity physical exertion.\n\n` +
+        `• NEXT STEPS & COORDINATION:\n` +
+        `  - We are scheduling an ECG diagnostic test and a follow-up appointment in the cardiology clinic.\n\n` +
+        `Wishing you good health,\n` +
+        `CareWeave Coordination Team`
+      );
+    } else if (isFever) {
+      return (
+        `Dear Patient,\n\n` +
+        `Thank you for visiting us today. Based on our clinical discussion, here is a simplified summary of your care plan:\n\n` +
+        `• WHAT WE FOUND: You have a seasonal fever, body pain, and dry cough secondary to an upper respiratory tract infection.\n\n` +
+        `• MEDICATIONS:\n` +
+        `  - Paracetamol 650mg up to 3 times daily only for fever or body pain.\n` +
+        `  - Cough Syrup 10ml 3 times daily.\n\n` +
+        `• HEALTH GUIDELINES & EXERCISE:\n` +
+        `  - Drink plenty of warm water, clear soups, and herbal teas.\n` +
+        `  - Perform warm water salt gargles 3-4 times daily.\n` +
+        `  - Take complete rest at home.\n\n` +
+        `• NEXT STEPS & COORDINATION:\n` +
+        `  - Monitor your temperature. If fever exceeds 102F or you experience difficulty breathing, visit the clinic immediately.\n\n` +
+        `Wishing you a speedy recovery,\n` +
+        `CareWeave Coordination Team`
+      );
+    } else if (isAbdominal) {
+      return (
+        `Dear ${patient.name || "Patient"},\n\n` +
+        `Thank you for visiting us today. Based on our clinical discussion, here is a simplified summary of your care plan:\n\n` +
+        `• WHAT WE FOUND: You present with localized sharp pain in the left lower part of your stomach, likely related to your history of diverticulosis.\n\n` +
+        `• MEDICATIONS:\n` +
+        `  - Continue your current prescriptions. Avoid self-medicating.\n\n` +
+        `• DIET & HEALTH GUIDELINES:\n` +
+        `  - Maintain a light, easily digestible diet. Avoid heavy, fried, or spicy meals.\n` +
+        `  - Increase high-fiber foods gradually as recommended, and drink plenty of fluids.\n\n` +
+        `• NEXT STEPS & COORDINATION:\n` +
+        `  - We are coordinating an abdominal ultrasound investigation and scheduling a referral to the gastroenterology clinic for review.\n\n` +
+        `Wishing you good health,\n` +
+        `CareWeave Coordination Team`
+      );
+    } else {
+      return (
+        `Dear Patient,\n\n` +
+        `Thank you for visiting us today. Based on our clinical discussion, here is a simplified summary of your care plan:\n\n` +
+        `• WHAT WE FOUND: During your routine checkup, we recorded an elevated blood pressure reading (140/90 mmHg) likely due to stress.\n\n` +
+        `• DIET & LIFESTYLE:\n` +
+        `  - Limit salt, oil, and saturated fats in your daily meals.\n` +
+        `  - Aim for 30 minutes of regular brisk walking daily.\n\n` +
+        `• MONITORING:\n` +
+        `  - Measure your blood pressure daily at home and record the readings.\n\n` +
+        `• NEXT STEPS & COORDINATION:\n` +
+        `  - Review with us in clinic in 7 days with your blood pressure logs.\n\n` +
+        `Wishing you good health,\n` +
+        `CareWeave Coordination Team`
+      );
+    }
+  };
+
+  const getCoordinationActions = () => {
+    const isCardiac = (conversation || "").toLowerCase().includes("seene") || (conversation || "").toLowerCase().includes("chest") || (conversation || "").toLowerCase().includes("breath") || (conversation || "").toLowerCase().includes("saans");
+    const isFever = (conversation || "").toLowerCase().includes("bukhar") || (conversation || "").toLowerCase().includes("fever") || (conversation || "").toLowerCase().includes("cough") || (conversation || "").toLowerCase().includes("gale") || (conversation || "").toLowerCase().includes("cold");
+    const isAbdominal = (conversation || "").toLowerCase().includes("pet") || (conversation || "").toLowerCase().includes("abdomen") || (conversation || "").toLowerCase().includes("diverticulosis") || (conversation || "").toLowerCase().includes("pain");
+
+    if (isCardiac) {
+      return [
+        { id: "action_1", type: "Investigation", label: "Schedule 12-Lead Electrocardiogram (ECG)", status: "Pending approval" },
+        { id: "action_2", type: "Referral", label: "Specialist Referral: Outpatient Cardiology Clinic", status: "Pending approval" },
+        { id: "action_3", type: "Appointment", label: "Book Follow-up consultation in 7 days", status: "Pending approval" },
+        { id: "action_4", type: "Prescription", label: "Verify Prescription: Sorbitrate 5mg SL (PRN)", status: "Pending approval" }
+      ];
+    } else if (isFever) {
+      return [
+        { id: "action_1", type: "Investigation", label: "Complete Blood Count (CBC) Panel", status: "Pending approval" },
+        { id: "action_2", type: "Appointment", label: "Book Follow-up consultation in 3 days", status: "Pending approval" },
+        { id: "action_3", type: "Prescription", label: "Verify Prescription: Paracetamol 650mg (TDS)", status: "Pending approval" },
+        { id: "action_4", type: "Prescription", label: "Verify Prescription: Cough Syrup 10ml (TDS)", status: "Pending approval" }
+      ];
+    } else if (isAbdominal) {
+      return [
+        { id: "action_1", type: "Investigation", label: "Coordinate Abdominal Ultrasound", status: "Pending approval" },
+        { id: "action_2", type: "Referral", label: "Specialist Referral: Gastroenterology Consultation", status: "Pending approval" },
+        { id: "action_3", type: "Appointment", label: "Schedule follow-up checkup in 14 days", status: "Pending approval" },
+        { id: "action_4", type: "Dietary", label: "Referral to Clinical Nutritionist", status: "Pending approval" }
+      ];
+    } else {
+      return [
+        { id: "action_1", type: "Investigation", label: "Daily Home Blood Pressure Logging", status: "Pending approval" },
+        { id: "action_2", type: "Investigation", label: "Order Lipid Profile Panel", status: "Pending approval" },
+        { id: "action_3", type: "Appointment", label: "Book Stress Management Consultation", status: "Pending approval" },
+        { id: "action_4", type: "Appointment", label: "Schedule follow-up consultation in 7 days", status: "Pending approval" }
+      ];
+    }
+  };
+
+  useEffect(() => {
+    setCoordinationActions(getCoordinationActions().map(a => ({ ...a, checked: true })));
+  }, [conversation]);
+
+  const handleToggleAction = (id) => {
+    setCoordinationActions(prev => prev.map(a => a.id === id ? { ...a, checked: !a.checked } : a));
+  };
+
+  const handleApproveActions = () => {
+    setSyncingActions(true);
+    setTimeout(() => {
+      setSyncingActions(false);
+      setChecklistApproved(true);
+    }, 1200);
+  };
 
   // Trigger SOAP note generation on load
   useEffect(() => {
@@ -863,7 +987,7 @@ function SoapGenerationPage() {
             <div class="clinic-brand">
               <div class="clinic-logo">+</div>
               <div class="clinic-details">
-                <h1 class="clinic-name">ClarityNote Medical Center</h1>
+                <h1 class="clinic-name">CareWeave Medical Center</h1>
                 <span class="clinic-tagline">Ambient EHR Clinical Documentation & Systems</span>
               </div>
             </div>
@@ -890,7 +1014,7 @@ function SoapGenerationPage() {
               <td class="label">Attending Doctor:</td>
               <td class="value">Dr. Patel, MD</td>
               <td class="label">Hospital/Clinic:</td>
-              <td class="value">ClarityNote Medical Center</td>
+              <td class="value">CareWeave Medical Center</td>
             </tr>
           </table>
 
@@ -1110,7 +1234,7 @@ function SoapGenerationPage() {
 
                 <div className="space-y-1">
                   <h3 className="text-white text-base font-black uppercase tracking-wider">Analyzing Conversation...</h3>
-                  <p className="text-slate-400 text-xs">ClarityNote AI agents are generating your structured clinical note.</p>
+                  <p className="text-slate-400 text-xs">CareWeave AI agents are generating your structured clinical note.</p>
                 </div>
 
                 <div className="w-full max-w-xs bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col gap-3 text-left">
@@ -1322,7 +1446,7 @@ function SoapGenerationPage() {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
                     <FaNotesMedical className="text-teal-400 text-xs" />
-                    <h2 className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider m-0">Aura Clinical Report</h2>
+                    <h2 className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider m-0">Clinical Report</h2>
                   </div>
                   
                   <div className="flex items-center gap-3">
@@ -1343,7 +1467,7 @@ function SoapGenerationPage() {
                       )}
                     </button>
                     <span className="text-[9px] text-teal-400 bg-teal-500/10 border border-teal-500/15 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
-                      Clinical Standard Report
+                      Standard Report
                     </span>
                   </div>
                 </div>
@@ -1401,83 +1525,223 @@ function SoapGenerationPage() {
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-[10px] text-teal-400 font-bold uppercase tracking-wider">Live Document Preview</span>
-                      <span className="text-[9px] text-slate-500 italic">Scroll to read the entire report</span>
+                      <span className="text-[9px] text-slate-500 italic">Explore, customize, and authorize outputs</span>
                     </div>
+
+                    {/* Document Tabs */}
+                    <div className="flex border border-slate-200 mb-4 bg-white p-1 rounded-xl shadow-sm gap-1">
+                      <button
+                        onClick={() => setActiveDocumentTab("clinical")}
+                        className={`flex-1 py-2 text-xs font-extrabold rounded-lg border-none cursor-pointer flex items-center justify-center gap-1.5 transition-all ${
+                          activeDocumentTab === "clinical" 
+                            ? "bg-[#1a3b6e] text-white shadow-sm font-black" 
+                            : "text-slate-500 hover:text-slate-800 bg-transparent hover:bg-slate-50"
+                        }`}
+                      >
+                        <FaNotesMedical className="text-[10px]" />
+                        <span>Clinical SOAP Note</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveDocumentTab("patientLetter")}
+                        className={`flex-1 py-2 text-xs font-extrabold rounded-lg border-none cursor-pointer flex items-center justify-center gap-1.5 transition-all ${
+                          activeDocumentTab === "patientLetter" 
+                            ? "bg-[#1a3b6e] text-white shadow-sm font-black" 
+                            : "text-slate-500 hover:text-slate-800 bg-transparent hover:bg-slate-50"
+                        }`}
+                      >
+                        <FaFileAlt className="text-[10px]" />
+                        <span>Patient Instruction Letter</span>
+                      </button>
+                      <button
+                        onClick={() => setActiveDocumentTab("coordination")}
+                        className={`flex-1 py-2 text-xs font-extrabold rounded-lg border-none cursor-pointer flex items-center justify-center gap-1.5 transition-all ${
+                          activeDocumentTab === "coordination" 
+                            ? "bg-[#1a3b6e] text-white shadow-sm font-black" 
+                            : "text-slate-500 hover:text-slate-800 bg-transparent hover:bg-slate-50"
+                        }`}
+                      >
+                        <FaCheckCircle className="text-[10px]" />
+                        <span>Care Sync Checklist</span>
+                      </button>
+                    </div>
+
                     <div className="w-full h-[580px] overflow-y-auto pr-1 bg-slate-50 border border-slate-200 rounded-xl p-6 relative overflow-x-hidden font-sans">
-                      {/* Elegant Watermark */}
-                      <div className="absolute top-8 right-8 text-teal-500/5 pointer-events-none">
-                        <FaNotesMedical className="text-9xl" />
-                      </div>
-
-                      {/* Header Letterhead */}
-                      <div className="border-b border-slate-200 pb-4 mb-5 flex justify-between items-start">
-                        <div>
-                          <h3 className="text-[#1a3b6e] text-xs font-bold tracking-wide uppercase">ClarityNote EHR System</h3>
-                          <p className="text-[10px] text-slate-400 font-medium mt-0.5">Automated Ambient Medical Documentation</p>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-[9px] bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 text-[#1a7f8e] font-bold px-2 py-0.5 rounded font-mono uppercase tracking-wider">
-                            Status: Draft
-                          </span>
-                          <p className="text-[9px] text-slate-500 mt-1 font-mono">ID: {patient.patient_id}-{Date.now().toString().slice(-4)}</p>
-                        </div>
-                      </div>
-
-                      {/* Document Content Flow */}
-                      <div className="flex flex-col gap-6">
-                        {/* Subjective */}
-                        <div className="border-l-4 border-[#1a7f8e] pl-4 py-0.5">
-                          <h4 className="text-[#1a7f8e] text-[10px] font-bold uppercase tracking-wider mb-2">Subjective (S)</h4>
-                          {renderFormattedText(parsedSoap.subjective)}
-                        </div>
-
-                        {/* Objective */}
-                        <div className="border-l-4 border-[#2b6cb0] pl-4 py-0.5">
-                          <h4 className="text-[#2b6cb0] text-[10px] font-bold uppercase tracking-wider mb-2">Objective (O)</h4>
-                          {renderFormattedText(parsedSoap.objective)}
-                        </div>
-
-                        {/* Assessment */}
-                        <div className="border-l-4 border-indigo-600 pl-4 py-0.5">
-                          <h4 className="text-indigo-600 text-[10px] font-bold uppercase tracking-wider mb-2">Assessment (A)</h4>
-                          {renderFormattedText(parsedSoap.assessment)}
-                        </div>
-
-                        {/* Plan */}
-                        <div className="border-l-4 border-[#2eb37e] pl-4 py-0.5">
-                          <h4 className="text-[#2eb37e] text-[10px] font-bold uppercase tracking-wider mb-2">Plan (P)</h4>
-                          {renderFormattedText(parsedSoap.plan)}
-                        </div>
-
-                        {/* Diagnosis Suggestions */}
-                        {parsedSoap.diagnosis && (
-                          <div className="mt-2 border border-amber-200 bg-amber-50 rounded-xl p-4">
-                            <h4 className="text-amber-700 text-[10px] font-bold uppercase tracking-wider mb-2">Diagnosis Suggestions</h4>
-                            {renderDiagnosisSuggestions(parsedSoap.diagnosis)}
-                            <p className="text-[9px] text-amber-500/80 italic mt-3 pt-2 border-t border-amber-500/10 leading-normal">
-                              *Disclaimer: Diagnostic recommendations are generated by AI and are intended for reference only. They do not constitute official medical advice.
-                            </p>
+                      {activeDocumentTab === "clinical" && (
+                        <>
+                          {/* Elegant Watermark */}
+                          <div className="absolute top-8 right-8 text-teal-500/5 pointer-events-none">
+                            <FaNotesMedical className="text-9xl" />
                           </div>
-                        )}
 
-                        {/* Clinical Insights & Predictions */}
-                        {(parsedSoap.insights || parsedSoap.predictions) && (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                            {parsedSoap.insights && (
-                              <div className="border border-[#1a7f8e]/20 bg-[#1a7f8e]/5 rounded-xl p-4">
-                                <h4 className="text-[#1a7f8e] text-[10px] font-bold uppercase tracking-wider mb-2">Clinical Insights</h4>
-                                {renderFormattedText(parsedSoap.insights)}
+                          {/* Header Letterhead */}
+                          <div className="border-b border-slate-200 pb-4 mb-5 flex justify-between items-start">
+                            <div>
+                              <h3 className="text-[#1a3b6e] text-xs font-bold tracking-wide uppercase">CareWeave EHR System</h3>
+                              <p className="text-[10px] text-slate-400 font-medium mt-0.5">Automated Ambient Medical Documentation</p>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-[9px] bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 text-[#1a7f8e] font-bold px-2 py-0.5 rounded font-mono uppercase tracking-wider">
+                                Status: Draft
+                              </span>
+                              <p className="text-[9px] text-slate-500 mt-1 font-mono">ID: {patient.patient_id}-{Date.now().toString().slice(-4)}</p>
+                            </div>
+                          </div>
+
+                          {/* Document Content Flow */}
+                          <div className="flex flex-col gap-6">
+                            {/* Subjective */}
+                            <div className="border-l-4 border-[#1a7f8e] pl-4 py-0.5">
+                              <h4 className="text-[#1a7f8e] text-[10px] font-bold uppercase tracking-wider mb-2">Subjective (S)</h4>
+                              {renderFormattedText(parsedSoap.subjective)}
+                            </div>
+
+                            {/* Objective */}
+                            <div className="border-l-4 border-[#2b6cb0] pl-4 py-0.5">
+                              <h4 className="text-[#2b6cb0] text-[10px] font-bold uppercase tracking-wider mb-2">Objective (O)</h4>
+                              {renderFormattedText(parsedSoap.objective)}
+                            </div>
+
+                            {/* Assessment */}
+                            <div className="border-l-4 border-indigo-600 pl-4 py-0.5">
+                              <h4 className="text-indigo-600 text-[10px] font-bold uppercase tracking-wider mb-2">Assessment (A)</h4>
+                              {renderFormattedText(parsedSoap.assessment)}
+                            </div>
+
+                            {/* Plan */}
+                            <div className="border-l-4 border-[#2eb37e] pl-4 py-0.5">
+                              <h4 className="text-[#2eb37e] text-[10px] font-bold uppercase tracking-wider mb-2">Plan (P)</h4>
+                              {renderFormattedText(parsedSoap.plan)}
+                            </div>
+
+                            {/* Diagnosis Suggestions */}
+                            {parsedSoap.diagnosis && (
+                              <div className="mt-2 border border-amber-200 bg-amber-50 rounded-xl p-4">
+                                <h4 className="text-amber-700 text-[10px] font-bold uppercase tracking-wider mb-2">Diagnosis Suggestions</h4>
+                                {renderDiagnosisSuggestions(parsedSoap.diagnosis)}
+                                <p className="text-[9px] text-amber-500/80 italic mt-3 pt-2 border-t border-amber-500/10 leading-normal">
+                                  *Disclaimer: Diagnostic recommendations are generated by AI and are intended for reference only. They do not constitute official medical advice.
+                                </p>
                               </div>
                             )}
-                            {parsedSoap.predictions && (
-                              <div className="border border-[#2b6cb0]/20 bg-[#2b6cb0]/5 rounded-xl p-4">
-                                <h4 className="text-[#2b6cb0] text-[10px] font-bold uppercase tracking-wider mb-2">Symptom Predictions</h4>
-                                {renderFormattedText(parsedSoap.predictions)}
+
+                            {/* Clinical Insights & Predictions */}
+                            {(parsedSoap.insights || parsedSoap.predictions) && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                {parsedSoap.insights && (
+                                  <div className="border border-[#1a7f8e]/20 bg-[#1a7f8e]/5 rounded-xl p-4">
+                                    <h4 className="text-[#1a7f8e] text-[10px] font-bold uppercase tracking-wider mb-2">Clinical Insights</h4>
+                                    {renderFormattedText(parsedSoap.insights)}
+                                  </div>
+                                )}
+                                {parsedSoap.predictions && (
+                                  <div className="border border-[#2b6cb0]/20 bg-[#2b6cb0]/5 rounded-xl p-4">
+                                    <h4 className="text-[#2b6cb0] text-[10px] font-bold uppercase tracking-wider mb-2">Symptom Predictions</h4>
+                                    {renderFormattedText(parsedSoap.predictions)}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
-                        )}
-                      </div>
+                        </>
+                      )}
+
+                      {activeDocumentTab === "patientLetter" && (
+                        <div className="flex flex-col gap-4 text-left select-text leading-relaxed">
+                          <div className="border-b border-slate-200 pb-3 mb-2">
+                            <h4 className="text-[#1a3b6e] text-sm font-extrabold uppercase m-0 flex items-center gap-2">
+                              <FaFileAlt className="text-teal-500" />
+                              Simplified Patient Care Instructions
+                            </h4>
+                            <p className="text-[10px] text-slate-500 mt-1">This simplified summary is written in plain language for the patient's reference.</p>
+                          </div>
+                          <div className="bg-slate-100/50 border border-slate-200 p-6 rounded-xl font-sans text-xs text-slate-700 whitespace-pre-wrap">
+                            {getPatientLetterText()}
+                          </div>
+                        </div>
+                      )}
+
+                      {activeDocumentTab === "coordination" && (
+                        <div className="flex flex-col gap-4 text-left">
+                          <div className="border-b border-slate-200 pb-3 mb-2">
+                            <h4 className="text-[#1a3b6e] text-sm font-extrabold uppercase m-0 flex items-center gap-2">
+                              <FaCheckCircle className="text-[#1a7f8e]" />
+                              AI Care Coordination &amp; Follow-Up Sync
+                            </h4>
+                            <p className="text-[10px] text-slate-500 mt-1">Review and approve administrative coordinates detected from this encounter.</p>
+                          </div>
+
+                          {checklistApproved ? (
+                            <div className="p-6 bg-emerald-50 border border-emerald-200 rounded-xl text-center flex flex-col items-center gap-3 animate-fade-in">
+                              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg shadow-sm">
+                                <FaCheck />
+                              </div>
+                              <div>
+                                <h4 className="text-emerald-800 text-sm font-bold m-0">Coordinates Synchronized!</h4>
+                                <p className="text-xs text-emerald-700 mt-1 max-w-md mx-auto leading-relaxed">
+                                  The approved diagnostic tests, referrals, and appointments have been logged and pushed to the Patient Journey timeline and Nurse alerts queue.
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-4">
+                              <div className="flex flex-col gap-2">
+                                {coordinationActions.map(action => (
+                                  <div 
+                                    key={action.id} 
+                                    onClick={() => handleToggleAction(action.id)}
+                                    className={`flex items-start gap-4 p-3 border rounded-xl cursor-pointer transition-all select-none ${
+                                      action.checked 
+                                        ? "bg-teal-50/50 border-teal-200" 
+                                        : "bg-white border-slate-200 hover:bg-slate-50"
+                                    }`}
+                                  >
+                                    <input 
+                                      type="checkbox"
+                                      checked={action.checked}
+                                      onChange={() => {}} // handled by parent onClick
+                                      className="mt-1 cursor-pointer shrink-0 accent-[#1a7f8e]"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className={`px-2 py-0.2 rounded text-[8px] font-extrabold uppercase ${
+                                          action.type === "Investigation" ? "bg-blue-100 text-blue-700 border border-blue-200" :
+                                          action.type === "Referral" ? "bg-purple-100 text-purple-700 border border-purple-200" :
+                                          action.type === "Appointment" ? "bg-amber-100 text-amber-700 border border-amber-200" :
+                                          "bg-slate-100 text-slate-700 border border-slate-200"
+                                        }`}>
+                                          {action.type}
+                                        </span>
+                                        <span className="text-[9px] text-slate-400 font-medium">Status: {action.status}</span>
+                                      </div>
+                                      <p className="text-xs font-bold text-slate-700 m-0 mt-1.5">{action.label}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex justify-end mt-2">
+                                <button
+                                  onClick={handleApproveActions}
+                                  disabled={syncingActions}
+                                  className="btn-pill btn-amber text-xs px-6 py-3 shadow-md hover:shadow-xl flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  {syncingActions ? (
+                                    <>
+                                      <FaSpinner className="animate-spin" />
+                                      <span>Syncing Coordinates...</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <FaCheckCircle />
+                                      <span>Approve &amp; Sync to Care Journey</span>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <p className="text-[9px] text-slate-500 font-medium italic mt-1 leading-normal">
                       *Review the formatted clinical sheet above. Click "Edit Raw Text" to modify the content directly.

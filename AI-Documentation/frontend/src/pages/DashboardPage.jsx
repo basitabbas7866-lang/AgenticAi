@@ -23,7 +23,7 @@ import ProfileWidget from "../components/dashboard/ProfileWidget";
 import MobileHeader from "../components/dashboard/MobileHeader";
 import BackgroundOrbs from "../components/dashboard/BackgroundOrbs";
 import { useAudioRecorder } from "../hooks/useAudioRecorder";
-import { initialPatientsList, initialConsultationsList } from "../components/dashboard/mockData";
+import { initialPatientsList } from "../components/dashboard/mockData";
 import PatientJourney from "../components/dashboard/PatientJourney";
 import AttentionRequired from "../components/dashboard/AttentionRequired";
 import CoordinationReviewQueue from "../components/dashboard/CoordinationReviewQueue";
@@ -81,7 +81,8 @@ function DashboardPage() {
 
   // Pre-seeded clinical datasets
   const [recentPatients, setRecentPatients] = useState([]);
-  const [consultations, setConsultations] = useState(initialConsultationsList);
+  // Consultation/sessions list — loaded live from DB when patient changes
+  const [consultations, setConsultations] = useState([]);
 
   const transcribeAudio = async () => {
     if (!audioBlob) return;
@@ -207,6 +208,35 @@ function DashboardPage() {
       .catch(err => console.log("Failed to load patients from database:", err));
   }, [activeTab]);
 
+  // Fetch real session history whenever the active patient changes
+  useEffect(() => {
+    if (!patient?.patient_id) return;
+    api.getPatientSessions(patient.patient_id)
+      .then(res => {
+        if (Array.isArray(res.data)) {
+          // Map backend session schema to ConsultationTable expected format
+          const mapped = res.data.map(s => ({
+            patientId: s.patient_id || patient.patient_id,
+            patientName: patient.name || s.patient_id,
+            date: s.created_at
+              ? new Date(s.created_at).toLocaleString("en-IN", {
+                  month: "short", day: "numeric", year: "numeric",
+                  hour: "2-digit", minute: "2-digit"
+                })
+              : "N/A",
+            diagnosis: s.report
+              ? s.report.split("\n").find(l => l.toLowerCase().includes("assessment") || l.toLowerCase().includes("diagnos"))?.replace(/^[^:]+:/i, "").trim() || "Clinical Note Available"
+              : "In Progress",
+            status: s.report ? "Completed" : "In Progress",
+            // Raw data for SOAP navigation
+            _rawSession: s
+          }));
+          setConsultations(mapped);
+        }
+      })
+      .catch(err => console.log("Session history fetch failed:", err));
+  }, [patient]);
+
 
 
   return (
@@ -224,7 +254,7 @@ function DashboardPage() {
               </button>
               <img src="/logo.jpg" alt="CareWeave Logo" className="h-8 w-auto object-contain bg-white px-2 py-0.5 rounded shadow-sm" />
               <span className="text-xs font-bold text-amber-300 hidden sm:inline">
-                | {role === "patient" ? "Patient Care Portal" : "Clinical Workstation"}
+                | {role === "patient" ? "Patient Portal" : role === "nurse" ? "Nurse Portal" : "Doctor Portal"}
               </span>
           </div>
 
@@ -327,46 +357,50 @@ function DashboardPage() {
                 }}
               />
 
-              {/* INTEGRATED STANDALONE MODULAR RECORDING/INTAKE WORKSTATION COMPONENT */}
-              <WorkstationController
-                patient={patient}
-                isRecording={isRecording}
-                isPaused={isPaused}
-                recordingTime={recordingTime}
-                audioBlob={audioBlob}
-                audioLevels={audioLevels}
-                transcribing={transcribing}
-                language={language}
-                speakerData={speakerData}
-                patientIntakeMode={patientIntakeMode}
-                setPatientIntakeMode={setPatientIntakeMode}
-                patientId={patientId}
-                setPatientId={setPatientId}
-                recentPatients={recentPatients}
-                setPatient={setPatient}
-                quickPatient={quickPatient}
-                setQuickPatient={setQuickPatient}
-                handleSearchPatient={handleSearchPatient}
-                handleQuickRegister={handleQuickRegister}
-                startRecording={startRecording}
-                pauseRecording={pauseRecording}
-                resumeRecording={resumeRecording}
-                stopRecording={stopRecording}
-                transcribeAudio={transcribeAudio}
-                formatTime={formatTime}
-                transcriptText={transcriptText}
-              />
+              {role === "doctor" && (
+                <>
+                  {/* INTEGRATED STANDALONE MODULAR RECORDING/INTAKE WORKSTATION COMPONENT */}
+                  <WorkstationController
+                    patient={patient}
+                    isRecording={isRecording}
+                    isPaused={isPaused}
+                    recordingTime={recordingTime}
+                    audioBlob={audioBlob}
+                    audioLevels={audioLevels}
+                    transcribing={transcribing}
+                    language={language}
+                    speakerData={speakerData}
+                    patientIntakeMode={patientIntakeMode}
+                    setPatientIntakeMode={setPatientIntakeMode}
+                    patientId={patientId}
+                    setPatientId={setPatientId}
+                    recentPatients={recentPatients}
+                    setPatient={setPatient}
+                    quickPatient={quickPatient}
+                    setQuickPatient={setQuickPatient}
+                    handleSearchPatient={handleSearchPatient}
+                    handleQuickRegister={handleQuickRegister}
+                    startRecording={startRecording}
+                    pauseRecording={pauseRecording}
+                    resumeRecording={resumeRecording}
+                    stopRecording={stopRecording}
+                    transcribeAudio={transcribeAudio}
+                    formatTime={formatTime}
+                    transcriptText={transcriptText}
+                  />
 
-              {/* Live Transcript Bubble Boards */}
-              <TranscriptReview
-                patient={patient}
-                recentPatients={recentPatients}
-                conversation={conversation}
-                setConversation={setConversation}
-                language={language}
-                transcribing={transcribing}
-                speakerData={speakerData}
-              />
+                  {/* Live Transcript Bubble Boards */}
+                  <TranscriptReview
+                    patient={patient}
+                    recentPatients={recentPatients}
+                    conversation={conversation}
+                    setConversation={setConversation}
+                    language={language}
+                    transcribing={transcribing}
+                    speakerData={speakerData}
+                  />
+                </>
+              )}
 
             </div>
           )}

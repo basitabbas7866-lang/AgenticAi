@@ -10,7 +10,7 @@ function MobileHeader({ onOpenSidebar }) {
         <FaBars className="text-sm" />
       </button>
       <span className="tracking-wide font-bold text-xs text-white">
-        ClarityNote <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400 font-medium">AI</span>
+        CareWeave <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400 font-medium">AI</span>
       </span>
       <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 font-bold text-xs">
         DR

@@ -27,6 +27,9 @@ class Patient(Base):
 
     phone = Column(String)
 
+    assigned_doctor_id = Column(String, nullable=True)
+    status = Column(String, default="PENDING") # PENDING, APPROVED
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow
@@ -47,4 +50,39 @@ class Report(Base):
 
     report_text = Column(
         Text
+    )
+
+
+class Prescription(Base):
+    __tablename__ = "prescriptions"
+
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
+    patient_id = Column(
+        String,
+        nullable=False,
+        index=True
+    )
+    doctor_id = Column(
+        String,
+        nullable=False
+    )
+    doctor_name = Column(
+        String,
+        nullable=False
+    )
+    medication_name = Column(
+        String,
+        nullable=False
+    )
+    instructions = Column(
+        Text,
+        nullable=False
+    )
+    prescribed_at = Column(
+        DateTime,
+        default=datetime.utcnow
     )

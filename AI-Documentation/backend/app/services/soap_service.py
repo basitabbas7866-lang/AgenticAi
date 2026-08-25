@@ -1,9 +1,9 @@
-# from app.services.groq_service import (
-#     generate_response
-# )
-from app.services.medgemma_service import (
+from app.services.groq_service import (
     generate_response
 )
+# from app.services.medgemma_service import (
+#     generate_response
+# )
 
 from app.services.query_builder import (
     build_medical_query
@@ -50,43 +50,38 @@ def generate_soap(
 
 """
 
-    prompt = f"""
-You are an expert AI Clinical Documentation Assistant.
+    prompt = f"""You are an expert AI Clinical Documentation Assistant. Your job is to generate structured medical documentation based on the current conversation and history.
 
 PATIENT HISTORY:
-
 {context}
 
 CURRENT CONVERSATION:
-
 {conversation}
 
 IMPORTANT RULES:
+1. ONLY use information explicitly provided in the current conversation or relevant patient history.
+2. NEVER invent diagnoses, medications, lab values, or vital signs.
+3. If any section (S, O, A, or P) has no information in the conversation, write "Not provided".
+4. Diagnosis suggestions are NOT medical advice.
+5. Do NOT echo or print the rules, prompt instructions, patient history context, or the current conversation in your response. Start your output directly with the SOAP Note.
 
-1. ONLY use information explicitly provided.
+OUTPUT FORMAT:
+Your output must follow this exact format:
 
-2. NEVER invent:
-   - Diagnoses
-   - Medications
-   - Lab Values
-   - Vital Signs
+SOAP Note:
+S: [Subjective details here or "Not provided"]
+O: [Objective details here or "Not provided"]
+A: [Assessment details here or "Not provided"]
+P: [Plan details here or "Not provided"]
 
-3. Use previous history only when relevant.
+Diagnosis Suggestions:
+[Suggestions here or "Not provided"]
 
-4. If information is missing:
-   write "Not provided"
+Clinical Insights:
+[Insights here or "Not provided"]
 
-5. Diagnosis suggestions are NOT medical advice.
-
-Generate:
-
-SOAP NOTE
-
-Diagnosis Suggestions
-
-Clinical Insights
-
-Symptom Predictions
+Symptom Predictions:
+[Predictions here or "Not provided"]
 """
 
     print("\n")

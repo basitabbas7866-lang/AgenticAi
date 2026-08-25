@@ -72,7 +72,7 @@ function Testimonials() {
             Trusted by frontline clinicians
           </h2>
           <p className="text-stone-600 text-sm leading-relaxed">
-            Clinicians use ClarityNote AI to reduce the hidden work after each patient conversation.
+            Clinicians use CareWeave AI to reduce the hidden work after each patient conversation.
           </p>
         </div>
 

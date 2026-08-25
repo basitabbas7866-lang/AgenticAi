@@ -217,7 +217,9 @@ export const getPatientAlerts = async (patientId) => {
 };
 
 export const analyzePatientCoordination = async (patientId) => {
-  const response = await apiClient.get(`/patient/${patientId}/coordination/analyze`);
+  const response = await apiClient.get(`/patient/${patientId}/coordination/analyze`, {
+    headers: { Authorization: "Bearer clinical-workspace-token" }
+  });
   return response;
 };
 
@@ -250,8 +252,8 @@ export const loginUser = async (email, password, role) => {
   return response;
 };
 
-export const registerUser = async (name, email, password, role, specialty = null) => {
-  const response = await apiClient.post("/auth/register", { name, email, password, role, specialty });
+export const registerUser = async (name, email, password, role, specialty = null, age = null, gender = null, phone = null) => {
+  const response = await apiClient.post("/auth/register", { name, email, password, role, specialty, age, gender, phone });
   return response;
 };
 

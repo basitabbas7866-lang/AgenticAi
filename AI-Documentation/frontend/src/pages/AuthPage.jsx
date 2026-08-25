@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import * as api from "../api";
 import {
     FaUser,
@@ -49,7 +49,6 @@ function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [transcriptText, setTranscriptText] = useState("");
     const [errorMsg, setErrorMsg] = useState("");
     const [successMsg, setSuccessMsg] = useState("");
     const [formData, setFormData] = useState({
@@ -57,47 +56,12 @@ function AuthPage() {
         specialty: "",
         email: "doctor@careweave.com",
         password: "password123",
-        role: "doctor"
+        role: "doctor",
+        // Patient-specific registration fields
+        age: "",
+        gender: "",
+        phone: ""
     });
-
-    const cardRef = useRef(null);
-
-    // 3D Card Tilt Effects
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-    const mouseXSpring = useSpring(x, { stiffness: 150, damping: 20 });
-    const mouseYSpring = useSpring(y, { stiffness: 150, damping: 20 });
-    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["4deg", "-4deg"]);
-    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-4deg", "4deg"]);
-
-    function handleMouseMove(e) {
-        if (!cardRef.current) return;
-        const rect = cardRef.current.getBoundingClientRect();
-        const relativeX = (e.clientX - rect.left) / rect.width - 0.5;
-        const relativeY = (e.clientY - rect.top) / rect.height - 0.5;
-        x.set(relativeX);
-        y.set(relativeY);
-    }
-
-    function handleMouseLeave() {
-        x.set(0);
-        y.set(0);
-    }
-
-    // Typewriter Simulation for Clinical Stream
-    useEffect(() => {
-        const fullText = "Patient presents with a 3-day history of localized left lower quadrant abdominal pain, non-radiating, rated 6/10.";
-        let currentIndex = 0;
-        const interval = setInterval(() => {
-            if (currentIndex <= fullText.length) {
-                setTranscriptText(fullText.slice(0, currentIndex));
-                currentIndex++;
-            } else {
-                currentIndex = 0;
-            }
-        }, 55);
-        return () => clearInterval(interval);
-    }, []);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -108,7 +72,7 @@ function AuthPage() {
         setFormData((prev) => ({
             ...prev,
             role: roleId,
-            email: roleId === "doctor" ? "sarah@careweave.com" : roleId === "patient" ? "david@patient.com" : "nurse@careweave.com"
+            email: roleId === "doctor" ? "sarah@careweave.com" : roleId === "patient" ? "david@patient.com" : "soni@careweave.com"
         }));
     };
 
@@ -128,6 +92,14 @@ function AuthPage() {
                 email: "david@patient.com",
                 password: "patientpassword456",
                 role: "patient"
+            });
+        } else if (roleType === "nurse") {
+            setFormData({
+                name: "Nurse Soni",
+                specialty: "",
+                email: "soni@careweave.com",
+                password: "123456",
+                role: "nurse"
             });
         }
     };
@@ -149,7 +121,11 @@ function AuthPage() {
                     formData.email,
                     formData.password,
                     formData.role,
-                    formData.specialty
+                    formData.specialty,
+                    // Patient-specific fields sent to backend
+                    formData.role === "patient" ? parseInt(formData.age) || null : null,
+                    formData.role === "patient" ? formData.gender || null : null,
+                    formData.role === "patient" ? formData.phone || null : null
                 );
                 localStorage.setItem("user", JSON.stringify(res.data.user));
                 setSuccessMsg("Account provisioned successfully! Loading portal...");
@@ -164,138 +140,103 @@ function AuthPage() {
     };
 
     return (
-        <div className="auth-page w-screen min-h-screen grid lg:grid-cols-12 bg-[#f5f7fa] text-[#1a1a2e] font-sans antialiased relative select-none overflow-x-hidden">
-            {/* Top Navigation Bar */}
-            <div className="col-span-12 w-full bg-[#1a3b6e] text-white py-2.5 px-6 flex items-center justify-between border-b border-[#00909e]/30 z-20 shadow-sm">
-                <a href="/" onClick={(e) => { e.preventDefault(); navigate("/"); }} className="flex items-center gap-2.5 no-underline">
-                    <img src="/logo.jpg" alt="CareWeave Logo" className="h-8 w-auto object-contain bg-white px-2 py-0.5 rounded shadow-sm" />
-                    <span className="text-xs font-bold text-amber-300 hidden sm:inline">| Clinical Workstation &amp; Patient Portal</span>
-                </a>
+        <div className="auth-page w-screen min-h-screen grid lg:grid-cols-12 bg-[#1a3b6e] text-[#1a1a2e] font-sans antialiased relative select-none overflow-hidden">
+            
+            {/* ================= LEFT COLUMN: ILLUSTRATION (6 Columns) ================= */}
+            <div 
+                className="hidden lg:flex lg:col-span-6 relative flex-col justify-between py-10 px-12 bg-white z-10 items-center overflow-hidden"
+                style={{ clipPath: "polygon(0 0, 100% 0, 93% 30%, 98% 70%, 86% 100%, 0 100%)" }}
+            >
+                
+                {/* Back Link */}
                 <button
                     onClick={() => navigate("/")}
-                    className="text-xs font-bold bg-white/10 hover:bg-white/20 text-white px-4 py-1.5 rounded-full transition-all border border-white/20 cursor-pointer flex items-center gap-1.5 active:scale-95"
+                    className="absolute left-8 top-8 text-slate-400 hover:text-slate-600 font-extrabold text-[11px] bg-transparent border-none cursor-pointer flex items-center gap-1 uppercase tracking-wider transition-colors z-20"
                 >
-                    &larr; Return to Home
+                    &larr; back
                 </button>
-            </div>
 
-            {/* ================= LEFT COLUMN: CLINICAL SHOWCASE (5 Columns) ================= */}
-            <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between py-10 px-10 border-r border-slate-200 bg-white z-10">
-                <div className="my-auto flex flex-col gap-6 max-w-[440px] text-left">
-                    {/* Badge */}
-                    <div className="inline-flex items-center gap-2 bg-[#1a3b6e] text-[#e8a020] text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider w-fit border border-amber-300/30">
-                        <FaStethoscope className="text-amber-300" />
-                        <span>{isLogin ? "Authorized Portal Access" : "Provision New Identity"}</span>
-                    </div>
-
-                    {/* Main Title & Subtitle */}
-                    <div>
-                        <h1 className="text-2xl xl:text-3xl font-extrabold text-[#1a3b6e] tracking-tight leading-tight m-0 mb-2">
-                            {isLogin ? "Ambient AI Built for Modern Clinicians & Patients." : "Smarter Care Coordination. Zero Gaps."}
-                        </h1>
-                        <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-medium m-0">
-                            {isLogin
-                                ? "Access patient timelines, ambient SOAP transcription drafts, and multi-agent coordination monitors in real time."
-                                : "Create role-based accounts for Doctors, Nurses, and Patients with HIPAA-compliant database encryption."}
+                <div className="my-auto flex flex-col items-center gap-5 max-w-[480px] text-center z-10">
+                    <img 
+                        src="/coordination_illustration.jpg" 
+                        alt="Medical AI Coordination" 
+                        className="w-full max-w-[420px] lg:max-w-[460px] object-contain transform hover:scale-102 transition-transform duration-300"
+                    />
+                    <div className="mt-1">
+                        <h2 className="text-[#1a3b6e] text-lg font-black tracking-tight leading-tight m-0 mb-1.5">
+                            Coordinated Healthcare Intelligence
+                        </h2>
+                        <p className="text-slate-500 text-xs leading-relaxed font-medium m-0 max-w-sm">
+                            Connecting Doctors, Nurses, and Patients with automated ambient SOAP transcription and clinical tracking.
                         </p>
                     </div>
 
-                    {/* Live Capture Engine Demo Card */}
-                    <div className="w-full rounded-2xl border border-slate-200 bg-[#f8fafc] p-4 shadow-sm flex flex-col gap-3">
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                            <div className="flex items-center gap-2">
-                                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
-                                <span className="text-xs text-[#1a3b6e] font-extrabold uppercase tracking-wider">Live Capture Stream</span>
+                    {/* Stat Pills */}
+                    <div className="flex items-center gap-3 flex-wrap justify-center">
+                        {[
+                            { value: "500+", label: "AI Notes / Day" },
+                            { value: "3 Roles", label: "Doctor · Nurse · Patient" },
+                            { value: "99.9%", label: "Uptime" },
+                        ].map((stat, i) => (
+                            <div key={i} className="flex flex-col items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
+                                <span className="text-[#1a3b6e] font-black text-sm leading-tight">{stat.value}</span>
+                                <span className="text-slate-400 text-[9px] font-semibold uppercase tracking-wider mt-0.5">{stat.label}</span>
                             </div>
-                            <span className="text-[10px] bg-red-50 text-red-600 border border-red-200 px-2 py-0.5 rounded-full font-bold">
-                                ACTIVE
-                            </span>
-                        </div>
-
-                        {/* Transcript Display Box */}
-                        <div className="bg-white rounded-xl p-3.5 border border-slate-200 shadow-inner flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0 mt-0.5">
-                                <FaMicrophone className="text-sm animate-pulse" />
-                            </div>
-                            <div className="text-left">
-                                <span className="block text-[10px] font-extrabold text-[#1a7f8e] uppercase tracking-wider">Physician &amp; Patient Stream</span>
-                                <p className="text-xs text-[#1a1a2e] font-mono leading-relaxed m-0 mt-0.5">
-                                    {transcriptText}
-                                    <span className="inline-block w-1.5 h-3 bg-[#1a7f8e] ml-1 animate-pulse" />
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* SOAP Draft Ready Strip */}
-                        <div className="bg-[#1a3b6e] text-white rounded-xl p-3 border border-[#1a7f8e]/30 flex items-center justify-between shadow-sm">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-7 h-7 rounded-md bg-amber-400 text-[#1a3b6e] flex items-center justify-center font-bold text-xs shrink-0">
-                                    <FaFileMedical />
-                                </div>
-                                <div className="text-left">
-                                    <span className="block text-xs font-bold text-white leading-tight">CC: LLQ Abdominal Pain (Acute)</span>
-                                    <span className="block text-[10px] text-amber-200">SOAP Framework Auto-Generated</span>
-                                </div>
-                            </div>
-                            <span className="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded font-extrabold uppercase tracking-wider">
-                                Ready
-                            </span>
-                        </div>
+                        ))}
                     </div>
 
-                    {/* Proof Points */}
-                    <div className="space-y-2 text-left">
+                    {/* Feature Highlights */}
+                    <div className="flex flex-col gap-2 text-left w-full max-w-xs">
                         {[
-                            "Multi-Agent Parallel Clinical Tracking Engine",
-                            "Grounded Vector RAG with MedCPT Embeddings",
-                            "Strict Human-in-the-Loop Clinical Action Governance"
-                        ].map((text, i) => (
-                            <div key={i} className="flex items-center gap-2.5 text-xs font-bold text-[#1a3b6e]">
-                                <FaCheckCircle className="text-[#059669] text-sm shrink-0" />
-                                <span>{text}</span>
+                            "Ambient SOAP auto-transcription",
+                            "Multi-agent clinical coordination",
+                            "HIPAA compliant, end-to-end encrypted",
+                        ].map((feature, i) => (
+                            <div key={i} className="flex items-center gap-2.5 text-[11px] font-semibold text-slate-600">
+                                <span className="w-4 h-4 rounded-full bg-[#1a7f8e]/10 border border-[#1a7f8e]/30 flex items-center justify-center text-[#1a7f8e] shrink-0 text-[8px]">✓</span>
+                                <span>{feature}</span>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="text-xs text-slate-500 font-medium text-left">
-                    &copy; 2026 CareWeave AI Health Network • HIPAA Encrypted.
-                </div>
+                {/* SVG Waves at the bottom */}
+                <svg className="absolute bottom-0 left-0 w-full h-[140px] text-slate-100 fill-current z-0" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                    <path d="M0,160L48,176C96,192,192,224,288,229.3C384,235,480,213,576,192C672,171,768,149,864,160C960,171,1056,213,1152,218.7C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                </svg>
+                <svg className="absolute bottom-0 left-0 w-full h-[95px] text-[#1a7f8e]/10 fill-current z-0 opacity-60" viewBox="0 0 1440 320" preserveAspectRatio="none">
+                    <path d="M0,96L48,112C96,128,192,160,288,181.3C384,203,480,213,576,197.3C672,181,768,139,864,138.7C960,139,1056,181,1152,192C1248,203,1344,181,1392,171L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                </svg>
             </div>
 
-            {/* ================= RIGHT COLUMN: MASTER LOGIN / REGISTER FORM (7 Columns) ================= */}
-            <div className="col-span-12 lg:col-span-7 flex items-center justify-center p-4 sm:p-8 lg:p-12 relative bg-[#f5f7fa]">
-                <motion.div
-                    ref={cardRef}
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
-                    style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="relative w-full max-w-[480px] bg-white border border-slate-200 shadow-xl rounded-2xl p-6 sm:p-8 text-left z-10"
-                >
+            {/* ================= RIGHT COLUMN: MASTER LOGIN / REGISTER FORM (6 Columns) ================= */}
+            <div className="col-span-12 lg:col-span-6 flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-[#1a3b6e] relative overflow-y-auto">
+                
+                {/* Decorative glowing gradient backdrops */}
+                <div className="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] rounded-full bg-[#1a7f8e]/20 blur-[80px] pointer-events-none" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none" />
+
+                <div className="w-full max-w-[440px] flex flex-col z-10">
+                    
                     {/* Header */}
-                    <div className="mb-5 flex items-start justify-between">
-                        <div>
-                            <h2 className="text-2xl font-extrabold text-[#1a3b6e] tracking-tight m-0">
-                                {isLogin ? "Welcome Back" : "Create Account"}
-                            </h2>
-                            <p className="text-slate-500 text-xs font-medium mt-1 m-0">
-                                {isLogin
-                                    ? "Select your role and enter credentials to sign in."
-                                    : "Register your identity in the CareWeave database."}
-                            </p>
-                        </div>
+                    <div className="mb-6 text-left">
+                        <h2 className="text-3xl font-black text-white tracking-tight uppercase m-0">
+                            {isLogin ? "Sign In" : "Sign Up"}
+                        </h2>
+                        <p className="text-slate-300 text-xs font-semibold mt-1.5 m-0 uppercase tracking-wider">
+                            {isLogin
+                                ? "to access CareWeave coordination workspace"
+                                : "to provision a new clinical identity"}
+                        </p>
                     </div>
 
                     {/* Tab Switcher */}
-                    <div className="w-full bg-[#f1f5f9] p-1 rounded-xl flex border border-slate-200 mb-5 relative">
+                    <div className="w-full bg-[#10274c]/50 p-1 rounded-xl flex border border-white/5 mb-6 relative">
                         <button
                             type="button"
                             onClick={() => { setIsLogin(true); setErrorMsg(""); setSuccessMsg(""); }}
-                            className={`flex-1 py-2 text-xs font-extrabold transition-all rounded-lg border-none cursor-pointer z-10 ${
-                                isLogin ? "bg-[#1a3b6e] text-white shadow-sm" : "text-slate-600 hover:text-slate-900 bg-transparent"
+                            className={`flex-1 py-2.5 text-xs font-bold transition-all rounded-lg border-none cursor-pointer z-10 ${
+                                isLogin ? "bg-amber-500 text-[#1a3b6e] shadow-md" : "text-slate-400 hover:text-white bg-transparent"
                             }`}
                         >
                             Sign In
@@ -303,8 +244,8 @@ function AuthPage() {
                         <button
                             type="button"
                             onClick={() => { setIsLogin(false); setErrorMsg(""); setSuccessMsg(""); }}
-                            className={`flex-1 py-2 text-xs font-extrabold transition-all rounded-lg border-none cursor-pointer z-10 ${
-                                !isLogin ? "bg-[#1a3b6e] text-white shadow-sm" : "text-slate-600 hover:text-slate-900 bg-transparent"
+                            className={`flex-1 py-2.5 text-xs font-bold transition-all rounded-lg border-none cursor-pointer z-10 ${
+                                !isLogin ? "bg-amber-500 text-[#1a3b6e] shadow-md" : "text-slate-400 hover:text-white bg-transparent"
                             }`}
                         >
                             Create Account
@@ -313,39 +254,47 @@ function AuthPage() {
 
                     {/* Feedback Messages */}
                     {errorMsg && (
-                        <div className="mb-4 bg-red-50 text-red-700 text-xs font-bold p-3 rounded-xl border border-red-200 flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                        <div className="mb-5 bg-red-955/40 text-red-200 text-xs font-bold p-3.5 rounded-xl border border-red-500/30 flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-red-500 shrink-0 animate-pulse" />
                             <span>{errorMsg}</span>
                         </div>
                     )}
                     {successMsg && (
-                        <div className="mb-4 bg-emerald-50 text-emerald-700 text-xs font-bold p-3 rounded-xl border border-emerald-200 flex items-center gap-2">
-                            <FaCheck className="text-emerald-600 shrink-0" />
+                        <div className="mb-5 bg-emerald-955/40 text-emerald-200 text-xs font-bold p-3.5 rounded-xl border border-emerald-500/30 flex items-center gap-2">
+                            <FaCheck className="text-emerald-400 shrink-0" />
                             <span>{successMsg}</span>
                         </div>
                     )}
 
                     {/* Role Selection Cards Grid */}
-                    <div className="mb-5">
-                        <div className="flex items-center justify-between mb-2">
-                            <label className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider">
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-2.5">
+                            <label className="text-[10px] text-slate-300 font-extrabold uppercase tracking-wider">
                                 Select Access Role
                             </label>
                             {isLogin && (
-                                <div className="flex items-center gap-2 text-[10px] font-bold text-[#1a7f8e]">
+                                <div className="flex items-center gap-2 text-[10px] font-bold text-teal-400">
                                     <span>Quick Fill:</span>
                                     <button
                                         type="button"
                                         onClick={() => handleFillDemo("doctor")}
-                                        className="hover:underline text-[#1a3b6e] cursor-pointer bg-transparent border-none p-0 font-bold"
+                                        className="hover:underline text-amber-300 cursor-pointer bg-transparent border-none p-0 font-bold"
                                     >
                                         Doctor
                                     </button>
                                     <span>•</span>
                                     <button
                                         type="button"
+                                        onClick={() => handleFillDemo("nurse")}
+                                        className="hover:underline text-amber-300 cursor-pointer bg-transparent border-none p-0 font-bold"
+                                    >
+                                        Nurse
+                                    </button>
+                                    <span>•</span>
+                                    <button
+                                        type="button"
                                         onClick={() => handleFillDemo("patient")}
-                                        className="hover:underline text-[#1a3b6e] cursor-pointer bg-transparent border-none p-0 font-bold"
+                                        className="hover:underline text-amber-300 cursor-pointer bg-transparent border-none p-0 font-bold"
                                     >
                                         Patient
                                     </button>
@@ -353,7 +302,7 @@ function AuthPage() {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2">
+                        <div className="grid grid-cols-3 gap-2.5">
                             {ROLE_OPTIONS.map((role) => {
                                 const Icon = role.icon;
                                 const isSelected = formData.role === role.id;
@@ -362,16 +311,16 @@ function AuthPage() {
                                         key={role.id}
                                         type="button"
                                         onClick={() => handleRoleSelect(role.id)}
-                                        className={`p-2.5 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
+                                        className={`p-3 rounded-xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
                                             isSelected
-                                                ? "bg-[#1a7f8e]/10 border-[#1a7f8e] shadow-sm text-[#1a3b6e]"
-                                                : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100/70"
+                                                ? "bg-[#1a7f8e]/20 border-teal-400 text-white shadow-md scale-98"
+                                                : "bg-[#10274c]/30 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:bg-[#10274c]/50 hover:text-slate-200"
                                         }`}
                                     >
                                         <div className="flex items-center justify-between w-full mb-1">
-                                            <Icon className={`text-sm ${isSelected ? "text-[#1a7f8e]" : "text-slate-400"}`} />
+                                            <Icon className={`text-sm ${isSelected ? "text-teal-400" : "text-slate-500"}`} />
                                             {isSelected && (
-                                                <span className="w-1.5 h-1.5 rounded-full bg-[#1a7f8e]" />
+                                                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shadow-sm" />
                                             )}
                                         </div>
                                         <div>
@@ -389,52 +338,97 @@ function AuthPage() {
                     </div>
 
                     {/* Main Form */}
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                         <AnimatePresence mode="popLayout" initial={false}>
                             {!isLogin && (
                                 <motion.div
                                     initial={{ height: 0, opacity: 0, y: -6 }}
                                     animate={{ height: "auto", opacity: 1, y: 0 }}
                                     exit={{ height: 0, opacity: 0, y: -6 }}
-                                    className="flex flex-col gap-3.5 overflow-hidden"
+                                    className="flex flex-col gap-5 overflow-hidden"
                                 >
-                                    <div className="relative group">
-                                        <FaUser className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1a7f8e] text-sm z-10" />
+                                    <div className="flex flex-col gap-1 text-left relative group">
+                                        <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Name</label>
                                         <input
                                             type="text"
                                             name="name"
                                             required={!isLogin}
                                             value={formData.name}
                                             onChange={handleInputChange}
-                                            placeholder={formData.role === "doctor" ? "Full Name, M.D." : "Full Name"}
-                                            className="w-full h-11 pl-11 pr-4 rounded-xl bg-white border border-slate-300 text-[#1a1a2e] text-xs outline-none focus:border-[#1a7f8e] focus:ring-2 focus:ring-[#1a7f8e]/20 transition-all font-semibold"
+                                            placeholder={formData.role === "doctor" ? "e.g. Dr. Sarah Jenkins" : "e.g. David Miller"}
+                                            className="w-full bg-transparent border-t-0 border-r-0 border-l-0 border-b border-slate-500/60 focus:border-teal-400 py-2.5 text-white text-xs outline-none transition-all font-semibold"
                                         />
                                     </div>
 
                                     {formData.role === "doctor" && (
-                                        <div className="relative group">
-                                            <FaStethoscope className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1a7f8e] text-sm z-10" />
+                                        <div className="flex flex-col gap-1 text-left relative group">
+                                            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Specialty</label>
                                             <select
                                                 name="specialty"
                                                 value={formData.specialty}
                                                 onChange={handleInputChange}
-                                                className="w-full h-11 pl-11 pr-10 rounded-xl bg-white border border-slate-300 text-[#1a1a2e] text-xs outline-none focus:border-[#1a7f8e] focus:ring-2 focus:ring-[#1a7f8e]/20 transition-all font-semibold appearance-none cursor-pointer"
+                                                className="w-full bg-transparent border-t-0 border-r-0 border-l-0 border-b border-slate-500/60 focus:border-teal-400 py-2.5 text-white text-xs outline-none transition-all font-semibold cursor-pointer appearance-none"
                                                 required
                                             >
-                                                <option value="">-- Select Medical Specialty --</option>
-                                                <option value="Cardiology">Cardiology</option>
-                                                <option value="Dentist">Dentist (Dental Medicine)</option>
-                                                <option value="Pediatrics">Pediatrics</option>
-                                                <option value="Orthopedics">Orthopedics</option>
-                                                <option value="Neurology">Neurology</option>
-                                                <option value="Dermatology">Dermatology</option>
-                                                <option value="General Medicine">General Medicine</option>
-                                                <option value="Psychiatry">Psychiatry</option>
-                                                <option value="Diagnosis">Diagnosis</option>
-                                                <option value="General Surgery">General Surgery</option>
+                                                <option value="" className="bg-[#1a3b6e] text-white">-- Select Specialty --</option>
+                                                <option value="Cardiology" className="bg-[#1a3b6e] text-white">Cardiology</option>
+                                                <option value="Dentist" className="bg-[#1a3b6e] text-white">Dentist (Dental Medicine)</option>
+                                                <option value="Pediatrics" className="bg-[#1a3b6e] text-white">Pediatrics</option>
+                                                <option value="Orthopedics" className="bg-[#1a3b6e] text-white">Orthopedics</option>
+                                                <option value="Neurology" className="bg-[#1a3b6e] text-white">Neurology</option>
+                                                <option value="Dermatology" className="bg-[#1a3b6e] text-white">Dermatology</option>
+                                                <option value="General Medicine" className="bg-[#1a3b6e] text-white">General Medicine</option>
+                                                <option value="Psychiatry" className="bg-[#1a3b6e] text-white">Psychiatry</option>
+                                                <option value="Diagnosis" className="bg-[#1a3b6e] text-white">Diagnosis</option>
+                                                <option value="General Surgery" className="bg-[#1a3b6e] text-white">General Surgery</option>
                                             </select>
-                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[9px]">
-                                                ▼
+                                        </div>
+                                    )}
+
+                                    {/* Patient-specific fields */}
+                                    {formData.role === "patient" && (
+                                        <div className="flex flex-col gap-4">
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="flex flex-col gap-1 text-left">
+                                                    <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Age</label>
+                                                    <input
+                                                        type="number"
+                                                        name="age"
+                                                        required
+                                                        min="1" max="120"
+                                                        value={formData.age}
+                                                        onChange={handleInputChange}
+                                                        placeholder="e.g. 32"
+                                                        className="w-full bg-transparent border-t-0 border-r-0 border-l-0 border-b border-slate-500/60 focus:border-teal-400 py-2.5 text-white text-xs outline-none transition-all font-semibold"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-1 text-left">
+                                                    <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Gender</label>
+                                                    <select
+                                                        name="gender"
+                                                        required
+                                                        value={formData.gender}
+                                                        onChange={handleInputChange}
+                                                        className="w-full bg-transparent border-t-0 border-r-0 border-l-0 border-b border-slate-500/60 focus:border-teal-400 py-2.5 text-white text-xs outline-none transition-all font-semibold cursor-pointer appearance-none"
+                                                    >
+                                                        <option value="" className="bg-[#1a3b6e] text-white">-- Select --</option>
+                                                        <option value="Male" className="bg-[#1a3b6e] text-white">Male</option>
+                                                        <option value="Female" className="bg-[#1a3b6e] text-white">Female</option>
+                                                        <option value="Other" className="bg-[#1a3b6e] text-white">Other</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col gap-1 text-left">
+                                                <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Phone Number</label>
+                                                <input
+                                                    type="tel"
+                                                    name="phone"
+                                                    required
+                                                    value={formData.phone}
+                                                    onChange={handleInputChange}
+                                                    placeholder="e.g. 9876543210"
+                                                    className="w-full bg-transparent border-t-0 border-r-0 border-l-0 border-b border-slate-500/60 focus:border-teal-400 py-2.5 text-white text-xs outline-none transition-all font-semibold"
+                                                />
                                             </div>
                                         </div>
                                     )}
@@ -443,48 +437,50 @@ function AuthPage() {
                         </AnimatePresence>
 
                         {/* Email Input */}
-                        <div className="relative group">
-                            <FaEnvelope className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1a7f8e] text-sm z-10" />
+                        <div className="flex flex-col gap-1 text-left relative group">
+                            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">E-Mail</label>
                             <input
                                 type="email"
                                 name="email"
                                 required
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                placeholder="Email Address"
-                                className="w-full h-11 pl-11 pr-4 rounded-xl bg-white border border-slate-300 text-[#1a1a2e] text-xs outline-none focus:border-[#1a7f8e] focus:ring-2 focus:ring-[#1a7f8e]/20 transition-all font-semibold"
+                                placeholder="Enter your email address"
+                                className="w-full bg-transparent border-t-0 border-r-0 border-l-0 border-b border-slate-500/60 focus:border-teal-400 py-2.5 text-white text-xs outline-none transition-all font-semibold"
                             />
                         </div>
 
                         {/* Password Input with Visibility Toggle */}
-                        <div className="relative group">
-                            <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1a7f8e] text-sm z-10" />
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                required
-                                value={formData.password}
-                                onChange={handleInputChange}
-                                placeholder="Password"
-                                className="w-full h-11 pl-11 pr-11 rounded-xl bg-white border border-slate-300 text-[#1a1a2e] text-xs outline-none focus:border-[#1a7f8e] focus:ring-2 focus:ring-[#1a7f8e]/20 transition-all font-semibold"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer p-1"
-                            >
-                                {showPassword ? <FaEyeSlash className="text-xs" /> : <FaEye className="text-xs" />}
-                            </button>
+                        <div className="flex flex-col gap-1 text-left relative group">
+                            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Password</label>
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    required
+                                    value={formData.password}
+                                    onChange={handleInputChange}
+                                    placeholder="••••••••••••"
+                                    className="w-full bg-transparent border-t-0 border-r-0 border-l-0 border-b border-slate-500/60 focus:border-teal-400 py-2.5 pr-10 text-white text-xs outline-none transition-all font-semibold"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white bg-transparent border-none cursor-pointer p-1"
+                                >
+                                    {showPassword ? <FaEyeSlash className="text-xs" /> : <FaEye className="text-xs" />}
+                                </button>
+                            </div>
                         </div>
 
                         {isLogin && (
-                            <div className="flex items-center justify-between text-xs pt-0.5">
-                                <label className="flex items-center gap-2 text-slate-600 font-semibold cursor-pointer">
-                                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-300 accent-[#1a3b6e] cursor-pointer" defaultChecked />
+                            <div className="flex items-center justify-between text-xs pt-1">
+                                <label className="flex items-center gap-2 text-slate-300 font-semibold cursor-pointer">
+                                    <input type="checkbox" className="w-3.5 h-3.5 rounded border-slate-600 bg-transparent accent-amber-500 cursor-pointer" defaultChecked />
                                     <span>Remember credentials</span>
                                 </label>
-                                <span className="text-[10px] text-slate-400 font-semibold">
-                                    Encrypted via TLS 1.3
+                                <span className="text-[9px] text-slate-400 font-semibold uppercase tracking-wider">
+                                    TLS 1.3 Secure
                                 </span>
                             </div>
                         )}
@@ -493,17 +489,17 @@ function AuthPage() {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="btn-amber w-full h-11 text-xs sm:text-sm rounded-full shadow-md flex items-center justify-center gap-2 cursor-pointer mt-2 disabled:opacity-50"
+                            className="bg-amber-500 hover:bg-amber-600 text-[#1a3b6e] font-extrabold w-full h-11 text-xs sm:text-sm rounded-full shadow-lg flex items-center justify-center gap-2 cursor-pointer mt-4 transition-all disabled:opacity-50 active:scale-98"
                         >
                             {isSubmitting ? (
                                 <>
                                     <FaSpinner className="animate-spin text-sm" />
-                                    <span>Verifying Identity...</span>
+                                    <span>Verifying...</span>
                                 </>
                             ) : (
                                 <>
                                     <FaKey className="text-xs" />
-                                    <span>{isLogin ? `Sign In as ${formData.role.toUpperCase()}` : "Register to Database"}</span>
+                                    <span>{isLogin ? `Sign In` : "Create Account"}</span>
                                     <FaArrowRight className="text-xs" />
                                 </>
                             )}
@@ -511,21 +507,25 @@ function AuthPage() {
                     </form>
 
                     {/* Trust Indicators */}
-                    <div className="mt-5 pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-600 font-bold uppercase tracking-wider">
-                        <div className="flex items-center gap-1.5 bg-[#f8fafc] px-2.5 py-1 rounded-md border border-slate-200">
-                            <FaShieldAlt className="text-[#059669]" />
+                    <div className="mt-8 pt-4 border-t border-slate-700/50 flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5">
+                            <FaShieldAlt className="text-emerald-400" />
                             <span>HIPAA Compliant</span>
                         </div>
-                        <div className="flex items-center gap-1.5 bg-[#f8fafc] px-2.5 py-1 rounded-md border border-slate-200">
-                            <FaShieldAlt className="text-[#2196b6]" />
+                        <div className="flex items-center gap-1.5">
+                            <FaShieldAlt className="text-teal-400" />
                             <span>SOC-2 Verified</span>
                         </div>
-                        <div className="flex items-center gap-1.5 bg-[#f8fafc] px-2.5 py-1 rounded-md border border-slate-200">
-                            <FaUserMd className="text-[#1a3b6e]" />
+                        <div className="flex items-center gap-1.5">
+                            <FaUserMd className="text-amber-400" />
                             <span>MFA Ready</span>
                         </div>
                     </div>
-                </motion.div>
+
+                    <div className="text-[10px] text-slate-500 font-medium text-center mt-6">
+                        &copy; 2026 CareWeave AI Health Network. All rights reserved.
+                    </div>
+                </div>
             </div>
         </div>
     );
