@@ -44,8 +44,8 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
         { id: 'journey', label: 'Care Journey Tracker', helper: 'Track appointments, labs & referrals', icon: FaHospital },
         { id: 'profile', label: 'Coordinator Profile', helper: 'Manage workstation settings', icon: FaCog }
     ] : [ // doctor
-        { id: 'dashboard', label: 'SOAP-RAG Workstation', helper: 'Ambient AI documentation engine', icon: FaMicrophone },
         { id: 'patients', label: 'Patients Directory', helper: 'Review charts & intake approvals', icon: FaUsers },
+        { id: 'dashboard', label: 'SOAP-RAG Workstation', helper: 'Ambient AI documentation engine', icon: FaMicrophone },
         { id: 'journey', label: 'Patient Journey Timeline', helper: 'Track full clinical history', icon: FaHospital },
         { id: 'reports', label: 'EHR Consultation Vault', helper: 'Review finalized clinical charts', icon: FaRegFileAlt },
         { id: 'profile', label: 'Clinician Settings', helper: 'Manage specialty & profile', icon: FaCog }

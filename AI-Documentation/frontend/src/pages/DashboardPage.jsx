@@ -35,7 +35,7 @@ function DashboardPage() {
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
   const role = loggedInUser.role || "doctor";
 
-  const [activeTab, setActiveTab] = useState(role === "patient" ? "journey" : "dashboard");
+  const [activeTab, setActiveTab] = useState(role === "patient" ? "journey" : role === "doctor" ? "patients" : "dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTeleconsultOpen, setIsTeleconsultOpen] = useState(false);
 

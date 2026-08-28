@@ -34,7 +34,8 @@ import {
   updateInvestigation,
   analyzePatientCoordination,
   getPatientReviews,
-  takeReviewAction
+  takeReviewAction,
+  getDoctors
 } from "../../api";
 
 const containerVariants = {
@@ -81,6 +82,8 @@ function PatientJourney({ patient }) {
   const [apptNotes, setApptNotes] = useState("");
   const [reschedDate, setReschedDate] = useState({}); // Stores reschedule inputs per appointment ID
   const [showReschedInput, setShowReschedInput] = useState({});
+  const [doctorsList, setDoctorsList] = useState([]);
+  const [selectedDoctorId, setSelectedDoctorId] = useState("");
 
   // Form - Referral Outgoing
   const [refReferring, setRefReferring] = useState("General Medicine");
@@ -201,6 +204,15 @@ function PatientJourney({ patient }) {
     finally { setLoadingInvs(false); }
   };
 
+  const fetchDoctorsList = async () => {
+    try {
+      const res = await getDoctors();
+      setDoctorsList(res.data.doctors || []);
+    } catch (err) {
+      console.error("Failed to fetch doctors list:", err);
+    }
+  };
+
   const fetchAllData = () => {
     if (!patient) return;
     fetchJourney();
@@ -208,6 +220,7 @@ function PatientJourney({ patient }) {
     fetchReferrals();
     fetchInvestigations();
     fetchPatientReviews();
+    fetchDoctorsList();
   };
 
   useEffect(() => {
@@ -241,15 +254,22 @@ function PatientJourney({ patient }) {
     e.preventDefault();
     if (!apptDate || !patient) return;
     setSubmitting(true);
+
+    const targetDocId = role === "patient"
+      ? (selectedDoctorId ? parseInt(selectedDoctorId) : null)
+      : (loggedInUser.id ? parseInt(loggedInUser.id) : null);
+
     try {
       await createAppointment(patient.patient_id, {
         department_service: apptDept,
         appointment_type: apptType,
         appointment_date: apptDate,
-        notes: apptNotes
+        notes: apptNotes,
+        doctor_id: targetDocId
       });
       setApptDate("");
       setApptNotes("");
+      setSelectedDoctorId("");
       fetchAppointments();
       fetchJourney(); // Update journey
     } catch (err) { console.error(err); }
@@ -630,15 +650,15 @@ function PatientJourney({ patient }) {
             {/* Appointment Booking Panel */}
             <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 h-fit shadow-sm">
               <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">
-                {role === "patient" ? "Request New Appointment" : "Book New Appointment"}
+                {role === "patient" ? "Request New Appointment" : "Schedule Follow-up Visit"}
               </h3>
               <form onSubmit={handleBookAppointment} className="space-y-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-slate-500 text-[10px] font-bold uppercase">Department/Service</label>
                   <select
-                    value={apptDept}
-                    onChange={(e) => setApptDept(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
+                     value={apptDept}
+                     onChange={(e) => setApptDept(e.target.value)}
+                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
                   >
                     <option value="Outpatient Clinic">General Outpatient Clinic</option>
                     <option value="Cardiology Department">Cardiology Department</option>
@@ -647,12 +667,29 @@ function PatientJourney({ patient }) {
                     <option value="Pathology Lab">Pathology Lab</option>
                   </select>
                 </div>
+                {role === "patient" && (
+                  <div className="flex flex-col gap-1.5 animate-fadeIn">
+                    <label className="text-slate-500 text-[10px] font-bold uppercase">Preferred Doctor</label>
+                    <select
+                      value={selectedDoctorId}
+                      onChange={(e) => setSelectedDoctorId(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
+                    >
+                      <option value="">Any Available Doctor</option>
+                      {doctorsList.map((doc) => (
+                        <option key={doc.id} value={doc.id}>
+                          Dr. {doc.name} ({doc.specialty || "General Medicine"})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-slate-500 text-[10px] font-bold uppercase">Appointment Type</label>
                   <select
-                    value={apptType}
-                    onChange={(e) => setApptType(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
+                     value={apptType}
+                     onChange={(e) => setApptType(e.target.value)}
+                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
                   >
                     <option value="Consultation">Clinical Consultation</option>
                     <option value="Follow-up">Care Follow-up</option>
@@ -672,11 +709,11 @@ function PatientJourney({ patient }) {
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-slate-500 text-[10px] font-bold uppercase">
-                    {role === "patient" ? "Reason for Appointment / Notes" : "Staff Coordination Notes"}
+                    {role === "patient" ? "Reason for Appointment / Notes" : "Clinical Follow-up Notes / Instructions"}
                   </label>
                   <textarea
                     rows="3"
-                    placeholder={role === "patient" ? "E.g. experiencing mild headaches, seeking follow-up on my treatment..." : "E.g. patient requested afternoon slot, requires wheelchair assistance..."}
+                    placeholder={role === "patient" ? "E.g. experiencing mild headaches, seeking follow-up on my treatment..." : "E.g. Schedule next consultation slot, note symptoms to check on..."}
                     value={apptNotes}
                     onChange={(e) => setApptNotes(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
@@ -687,7 +724,7 @@ function PatientJourney({ patient }) {
                   disabled={submitting}
                   className="w-full bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white py-2 text-xs font-bold"
                 >
-                  <span>{role === "patient" ? "Request Appointment" : "Schedule Appointment"}</span>
+                  <span>{role === "patient" ? "Request Appointment" : "Schedule Follow-up"}</span>
                 </button>
               </form>
             </div>
@@ -723,6 +760,11 @@ function PatientJourney({ patient }) {
                               <span className="text-[#1a7f8e] text-[10px] font-bold">{appt.appointment_type}</span>
                             </div>
                             <h4 className="text-[#1a3b6e] text-xs font-black mt-2">{appt.department_service}</h4>
+                            {appt.doctor_name && (
+                              <p className="text-slate-600 text-[10px] font-bold mt-1">
+                                Doctor: <span className="text-[#1a7f8e]">Dr. {appt.doctor_name}</span>
+                              </p>
+                            )}
                             <p className="text-slate-500 text-[10px] font-semibold mt-1">Date: <span className="text-slate-600 font-bold">{formattedDate}</span></p>
                             {appt.notes && <p className="text-slate-500 text-[10px] mt-2 italic">Notes: "{appt.notes}"</p>}
                           </div>

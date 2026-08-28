@@ -1,50 +1,72 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from app.services.soap_service import generate_soap_with_rag, compile_final_report
+
+from app.orchestrator.clinical_pipeline import run_pipeline
 from app.services.session_service import save_consultation
+from app.services.finalize_report_service import finalize_report
 
 router = APIRouter()
+
 
 class ConversationRequest(BaseModel):
     patient_id: str
     conversation: str
 
-class FinalReportRequest(BaseModel):
-    patient_id: str
-    soap_note: str
-    prescription: str
-    historical_comparison: str = ""
+
+class FinalizeRequest(BaseModel):
+    consultation_id: int
+    doctor_diagnosis: str
+    doctor_prescription: str
+    doctor_notes: str
+
 
 @router.post("/generate")
 def generate(request: ConversationRequest):
-    result = generate_soap_with_rag(
+    """
+    Run the three-agent clinical pipeline:
+      Agent 1 — SOAP Note
+      Agent 2 — Clinical Insights
+      Agent 3 — Validation Report
+    Save results to DB and return all three outputs.
+    """
+
+    result = run_pipeline(
         request.conversation,
         request.patient_id
     )
 
-    report = result["report"]
-    rag_metadata = result.get("rag_metadata", {})
-
-    session_id = save_consultation(
+    session_data = save_consultation(
         patient_id=request.patient_id,
         transcript=request.conversation,
-        report=report
+        soap_note=result["soap"],
+        ai_insights=result["insights"],
+        validation=result["validation"]
     )
 
     return {
-        "session_id": session_id,
-        "response": report,
-        "rag_metadata": rag_metadata
+        "consultation_id": session_data["consultation_id"],
+        "session_id": session_data["session_id"],
+        "session_number": session_data["session_number"],
+        "soap": result["soap"],
+        "insights": result["insights"],
+        "validation": result["validation"]
     }
 
-@router.post("/generate/final_report")
-def generate_final(request: FinalReportRequest):
-    final_report = compile_final_report(
-        soap_note=request.soap_note,
-        prescription=request.prescription,
-        historical_comparison=request.historical_comparison
+
+@router.post("/finalize-report")
+def finalize(request: FinalizeRequest):
+    """
+    Doctor review step: save diagnosis, prescription, notes.
+    Compile the final printable report and index in ChromaDB.
+    """
+
+    report = finalize_report(
+        consultation_id=request.consultation_id,
+        doctor_diagnosis=request.doctor_diagnosis,
+        doctor_prescription=request.doctor_prescription,
+        doctor_notes=request.doctor_notes
     )
+
     return {
-        "status": "success",
-        "final_report": final_report
-    }
+        "final_report": report
+    }

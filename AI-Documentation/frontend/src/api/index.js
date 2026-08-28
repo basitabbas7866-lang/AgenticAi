@@ -4,7 +4,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== "undefin
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 120000, // 120 seconds timeout for slow transcription/LLM generation pipelines
+  timeout: 300000, // 5 minutes timeout — medgemma:4b local model can be slow for 3-agent pipeline
   headers: {
     "Content-Type": "application/json",
   },
@@ -268,11 +268,22 @@ export const updateUser = async (userId, userData) => {
 };
 
 export const generateFinalReport = async (patientId, soapNote, prescription, historicalComparison = "") => {
+  // Legacy - kept for backward compat, prefer finalizeReport
   const response = await apiClient.post("/generate/final_report", {
     patient_id: patientId,
     soap_note: soapNote,
     prescription,
     historical_comparison: historicalComparison
+  });
+  return response;
+};
+
+export const finalizeReport = async (consultationId, doctorDiagnosis, doctorPrescription, doctorNotes) => {
+  const response = await apiClient.post("/finalize-report", {
+    consultation_id: consultationId,
+    doctor_diagnosis: doctorDiagnosis,
+    doctor_prescription: doctorPrescription,
+    doctor_notes: doctorNotes
   });
   return response;
 };

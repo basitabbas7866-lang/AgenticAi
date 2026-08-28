@@ -24,6 +24,12 @@ class Consultation(Base):
         nullable=False
     )
 
+    # Patient-wise session number
+    session_number = Column(
+        Integer,
+        nullable=True
+    )
+
     patient_id = Column(
         String,
         nullable=False
@@ -33,7 +39,41 @@ class Consultation(Base):
         Text
     )
 
+    # Legacy combined report (kept for backward compatibility)
     report = Column(
+        Text
+    )
+
+    # Agent 1: SOAP Note
+    soap_note = Column(
+        Text
+    )
+
+    # Agent 2: Clinical Insights
+    ai_insights = Column(
+        Text
+    )
+
+    # Agent 3: Validation
+    validation = Column(
+        Text
+    )
+
+    # Agent 4: Final Report
+    final_report = Column(
+        Text
+    )
+
+    # Doctor Inputs
+    doctor_diagnosis = Column(
+        Text
+    )
+
+    doctor_prescription = Column(
+        Text
+    )
+
+    doctor_notes = Column(
         Text
     )
 

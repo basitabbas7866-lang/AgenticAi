@@ -7,6 +7,8 @@ from app.models.patient import Patient
 from app.models.appointment import Appointment
 from app.services.journey_service import add_journey_event
 
+from app.models.user import User
+
 router = APIRouter(
     tags=["Appointments"]
 )
@@ -16,6 +18,7 @@ class AppointmentCreate(BaseModel):
     appointment_type: str
     appointment_date: datetime
     notes: str | None = None
+    doctor_id: int | None = None
 
 class AppointmentUpdate(BaseModel):
     department_service: str | None = None
@@ -32,13 +35,21 @@ def create_appointment(patient_id: str, request: AppointmentCreate):
         if not patient:
             raise HTTPException(status_code=404, detail="Patient not found")
         
+        doc_name = None
+        if request.doctor_id:
+            doctor = db.query(User).filter(User.id == request.doctor_id).first()
+            if doctor:
+                doc_name = doctor.name
+
         appointment = Appointment(
             patient_id=patient_id,
             department_service=request.department_service,
             appointment_type=request.appointment_type,
             appointment_date=request.appointment_date,
             status="SCHEDULED",
-            notes=request.notes
+            notes=request.notes,
+            doctor_id=request.doctor_id,
+            doctor_name=doc_name
         )
         db.add(appointment)
         db.commit()
@@ -46,12 +57,13 @@ def create_appointment(patient_id: str, request: AppointmentCreate):
         
         # Log to Care Journey
         date_str = appointment.appointment_date.strftime("%b %d, %Y at %I:%M %p")
+        desc_suffix = f" with Dr. {doc_name}" if doc_name else f" with {appointment.department_service}"
         add_journey_event(
             db=db,
             patient_id=patient_id,
             event_type="appointment",
             title="Appointment Scheduled",
-            description=f"Scheduled {appointment.appointment_type} with {appointment.department_service} on {date_str}.",
+            description=f"Scheduled {appointment.appointment_type}{desc_suffix} on {date_str}.",
             status="Scheduled",
             department_service=appointment.department_service,
             related_entity_type="appointment",
@@ -89,6 +101,8 @@ def get_patient_appointments(patient_id: str):
                 "appointment_date": appt.appointment_date.isoformat(),
                 "status": appt.status,
                 "notes": appt.notes,
+                "doctor_id": appt.doctor_id,
+                "doctor_name": appt.doctor_name,
                 "created_at": appt.created_at.isoformat(),
                 "updated_at": appt.updated_at.isoformat()
             })

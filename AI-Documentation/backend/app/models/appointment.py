@@ -36,6 +36,14 @@ class Appointment(Base):
         Text,
         nullable=True
     )
+    doctor_id = Column(
+        Integer,
+        nullable=True
+    )
+    doctor_name = Column(
+        String,
+        nullable=True
+    )
     created_at = Column(
         DateTime,
         default=datetime.utcnow,
