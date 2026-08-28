@@ -27,8 +27,12 @@ function OverviewStats({ patient, isRecording, isPaused, audioBlob }) {
         variants={itemVariants}
         className="bg-white rounded-xl p-3.5 border border-slate-200 col-span-1 lg:col-span-2 flex items-center gap-3.5 min-h-[80px] shadow-sm relative overflow-hidden text-left"
       >
-        <div className="w-10 h-10 rounded-xl bg-[#1a3b6e] flex items-center justify-center text-white text-lg shrink-0 shadow-sm">
-          <FaUserMd />
+        <div className="w-10 h-10 rounded-xl bg-[#1a3b6e] flex items-center justify-center text-white text-lg shrink-0 shadow-sm overflow-hidden">
+          {userRole === "doctor" && loggedInUser.id && localStorage.getItem(`doctor_profile_pic_${loggedInUser.id}`) ? (
+            <img src={localStorage.getItem(`doctor_profile_pic_${loggedInUser.id}`)} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            <FaUserMd />
+          )}
         </div>
         <div className="min-w-0">
           <span className="text-[9px] text-[#1a7f8e] font-extrabold uppercase tracking-wider block">Clinical Station</span>
@@ -36,7 +40,7 @@ function OverviewStats({ patient, isRecording, isPaused, audioBlob }) {
             {userRole === "doctor" ? `Dr. ${fullName}` : fullName}
           </h2>
           <p className="text-slate-500 text-[9px] font-bold mt-0.5 uppercase tracking-wider">
-            {userRole === "doctor" ? "General Practitioner" : userRole === "nurse" ? "Registered Nurse" : "Patient Portal"} | Node Online
+            {userRole === "doctor" ? (loggedInUser.specialty || "General Practitioner") : userRole === "nurse" ? "Registered Nurse" : "Patient Portal"} | Node Online
           </p>
         </div>
       </motion.div>
@@ -107,7 +111,9 @@ function OverviewStats({ patient, isRecording, isPaused, audioBlob }) {
             <div className="min-w-0">
               <span className="text-slate-500 text-[9px] font-bold uppercase tracking-wider block">Aura AI Accuracy</span>
               <div className="mt-0.5">
-                <h3 className="text-[#1a3b6e] text-sm font-extrabold m-0 leading-tight">98.8%</h3>
+                <h3 className="text-[#1a3b6e] text-sm font-extrabold m-0 leading-tight">
+                  {loggedInUser.id ? (localStorage.getItem(`doctor_accuracy_${loggedInUser.id}`) || "99.2%") : "98.8%"}
+                </h3>
                 <p className="text-emerald-600 text-[9px] font-bold mt-0.5 uppercase tracking-wider leading-none">Optimal Sync (en-IN)</p>
               </div>
             </div>

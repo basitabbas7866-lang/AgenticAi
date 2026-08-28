@@ -14,157 +14,199 @@ def get_groq_client():
     return Groq(api_key=current_key)
 
 def get_clinical_soap_fallback(prompt):
-    patient_name = "Rajesh Kuamr"
-    if "Sohith" in prompt:
-        patient_name = "Sohith"
-    elif "Rajesh" in prompt:
-        patient_name = "Rajesh Kuamr"
-    elif "Eleanor" in prompt:
-        patient_name = "Eleanor Vance"
-    elif "Basit" in prompt:
-        patient_name = "BASSIT ABBAS"
-    elif "Jayant" in prompt:
-        patient_name = "JAYANT KUMAR"
-    elif "dev" in prompt:
-        patient_name = "dev"
-        
     lower_prompt = prompt.lower()
     
     # Topic 1: Dental / Tooth / Gums / Dentist
-    if any(k in lower_prompt for k in ["dant", "tooth", "teeth", "dental", "dentist", "pain", "cavity", "gum"]):
-        return f"""# CLINICAL SOAP NOTE SUMMARY (DENTAL ENCOUNTER)
+    if any(k in lower_prompt for k in ["dant", "tooth", "teeth", "dental", "dentist", "cavity", "gum"]):
+        return """SOAP Note:
+S:
+- Patient complains of acute toothache in lower right molar area for 2 days
+- Pain described as sharp and throbbing, aggravated by cold liquids or pressure
+- Patient states: "Dant me bohot zyada dard ho raha hai"
 
-## Patient Information
-- **Name:** {patient_name}
-- **Date of Consultation:** Aug 22, 2026
-- **Specialty Center:** Dentistry / Dental Medicine
+O:
+- Intraoral: Deep carious lesion on tooth #30 (lower right first molar)
+- Percussion test: Exquisite tenderness on vertical percussion
+- Gingival: Slightly erythematous, no purulent exudate
 
----
+A:
+- Acute irreversible pulpitis, tooth #30 secondary to deep caries
+- Gingivitis under fair control
 
-## 1. Subjective (S)
-- Patient complains of acute localized toothache in the lower right molar area for 2 days.
-- Describes pain as sharp, throbbing, and aggravated by cold liquids or pressure.
-- Patient states: "Dant me bohot zyada dard ho raha hai aur thanda pani peene par jhanjhanahat hoti hai."
+P:
+- Amoxicillin 500mg TDS × 5 days
+- Ibuprofen 400mg BD PRN for pain
+- Schedule Root Canal Treatment (RCT) or extraction
+- Warm saline rinses, avoid cold/hard food
 
-## 2. Objective (O)
-- **Extraoral Exam:** No visible facial asymmetry or swelling of the cheek/jaw.
-- **Intraoral Exam:** Deep carious lesion noted on tooth #30 (lower right first molar). 
-- **Percussion Test:** Exquisite tenderness to vertical percussion on tooth #30.
-- **Gingival Condition:** Gums are slightly erythematous, no fluctuant swelling or purulent exudate.
+Diagnosis Suggestions:
+- Acute Irreversible Pulpitis (Confidence: 87%)
+- Periapical Abscess (Confidence: 45%)
 
-## 3. Assessment (A)
-- Acute irreversible pulpitis of tooth #30 secondary to deep dental caries.
-- Gingivitis under fair control.
+Clinical Insights:
+- Carious lesion has progressed to pulp involvement; urgent intervention required
+- No facial swelling currently; monitor for spreading infection
 
-## 4. Plan (P)
-- **Medications:**
-  - Prescribed Amoxicillin 500mg TDS for 5 days.
-  - Advised Tablet Ibuprofen 400mg BD PRN for pain control.
-- **Intervention:**
-  - Scheduled Root Canal Treatment (RCT) or Extraction on next clinical appointment.
-  - Advised warm saline rinses and strict avoidance of cold/hard foodstuffs."""
+Symptom Predictions:
+- Risk of periapical abscess if RCT delayed beyond 48 hours
+- Pain likely to worsen without intervention
 
-    # Topic 2: Headache / Brain / Neuro / Migraine
-    elif any(k in lower_prompt for k in ["sir", "head", "headache", "neuro", "brain", "migraine", "sleep", "stress"]):
-        return f"""# CLINICAL SOAP NOTE SUMMARY (NEUROLOGICAL ENCOUNTER)
+Historical Comparison:
+No relevant prior visit found for this complaint."""
 
-## Patient Information
-- **Name:** {patient_name}
-- **Date of Consultation:** Aug 22, 2026
-- **Specialty Center:** Neurology Unit
+    # Topic 2: Headache / Neuro / Migraine / Stress
+    elif any(k in lower_prompt for k in ["sir", "head", "headache", "neuro", "brain", "migraine", "sleep", "stress", "tension"]):
+        return """SOAP Note:
+S:
+- Patient reports severe throbbing headache in frontal-temporal region
+- Severity: 7/10, pulsating, with mild photophobia and fatigue
+- Patient states: "Sir me bohot dard hai, stress chal raha hai"
 
----
+O:
+- Neurological exam: Cranial nerves II-XII intact, normal gait
+- Pupils: PERRLA bilaterally
+- Vitals: BP 120/80 mmHg, HR 72 bpm
+- No meningeal signs
 
-## 1. Subjective (S)
-- Patient reports severe throbbing headache localized to the frontal-temporal region.
-- Describes it as a pulsating pressure, 7/10 severity, accompanied by mild photophobia and fatigue.
-- Patient states: "Sir me bohot zyada dard hai aur stress chal raha hai, chadhne par dard badhta hai."
+A:
+- Acute migraine without aura
+- Tension headache secondary to occupational stress
 
-## 2. Objective (O)
-- **Neurological Exam:** Cranial nerves II-XII intact. Normal gait and coordination.
-- **Pupils:** Equal, round, reactive to light (PERRLA).
-- **Vitals:** BP 120/80 mmHg, HR 72 bpm.
-- **Meningeal signs:** No neck stiffness or photophobia on physical exam.
+P:
+- Naproxen 250mg twice daily for pain management
+- Paracetamol 650mg PRN for acute episodes
+- Rest in dark quiet room during acute attacks
+- Limit screen time; manage sleep schedule
+- Follow-up if frequency increases
 
-## 3. Assessment (A)
-- Acute Migraine attack without aura.
-- Tension headache secondary to work stress.
+Diagnosis Suggestions:
+- Migraine Without Aura (Confidence: 82%)
+- Tension-Type Headache (Confidence: 76%)
 
-## 4. Plan (P)
-- **Medications:**
-  - Advised Tablet Naproxen 250mg twice daily for pain management.
-  - Tablet Paracetamol 650mg PRN for acute episodes.
-- **Lifestyle:**
-  - Rest in a dark, quiet room during acute attacks.
-  - Limit screen time and manage sleep schedule. Follow up if frequency increases."""
+Clinical Insights:
+- Stress is a key trigger; lifestyle modification counseling recommended
+- No red flag signs (sudden onset, focal neuro deficit, fever)
 
-    # Topic 3: Cold / Cough / Fever / Flu / Viral / Bukhar
-    elif any(k in lower_prompt for k in ["fever", "cold", "cough", "flu", "throat", "bukhar", "gala", "viral", "khansi"]):
-        return f"""# CLINICAL SOAP NOTE SUMMARY (GENERAL MEDICINE)
+Symptom Predictions:
+- High recovery expected with medication compliance and stress management
+- Risk of chronification if triggers not addressed
 
-## Patient Information
-- **Name:** {patient_name}
-- **Date of Consultation:** Aug 22, 2026
-- **Specialty Center:** General Medicine / Family Clinic
+Historical Comparison:
+No relevant prior visit found for this complaint."""
 
----
+    # Topic 3: Fever / Cough / Cold / URTI
+    elif any(k in lower_prompt for k in ["fever", "cold", "cough", "flu", "throat", "bukhar", "gala", "viral", "khansi", "sore"]):
+        return """SOAP Note:
+S:
+- Moderate fever (101°F), persistent dry cough, sore throat × 3 days
+- Generalized body aches, lethargy, mild nasal congestion
+- Patient states: "Gale me dard hai aur bukhar hai, weakness lag rahi hai"
 
-## 1. Subjective (S)
-- Patient complains of moderate fever (temp 101F), persistent dry cough, and sore throat for 3 days.
-- Reports generalized body aches, lethargy, and mild nasal congestion.
-- Patient states: "Gale me dard hai aur bukhar hai, saans lene me koi problem nahi hai par weakness hai."
+O:
+- Temp: 100.5°F | SpO2: 98% | RR: 18/min
+- HEENT: Pharynx erythematous; tonsils normal, no exudates
+- Lungs: Clear bilaterally, no wheeze or crepitations
 
-## 2. Objective (O)
-- **Vitals:** Temperature 100.5 F, SpO2 98% on room air, RR 18/min.
-- **HEENT:** Pharynx is erythematous, tonsils are normal with no exudates. 
-- **Lungs:** Chest is clear to auscultation bilaterally. No wheezing or crepitations.
+A:
+- Acute Viral URTI with mild pharyngitis
+- No signs of lower respiratory tract involvement
 
-## 3. Assessment (A)
-- Acute Viral Upper Respiratory Tract Infection (URTI) with mild pharyngitis.
+P:
+- Paracetamol 650mg TDS × 3 days (PRN for temp > 99°F)
+- Cetirizine 10mg once daily at night for congestion
+- Steam inhalation twice daily and warm saline gargles
+- Increase fluids, complete bed rest
+- Review in 3 days if no improvement
 
-## 4. Plan (P)
-- **Medications:**
-  - Prescribed Tablet Paracetamol 650mg TDS for 3 days (PRN for temp > 99 F).
-  - Tablet Cetirizine 10mg once daily at night for congestion.
-- **Home Care:**
-  - Steam inhalation twice daily and warm saline gargles.
-  - Increase fluid intake and complete physical rest."""
+Diagnosis Suggestions:
+- Acute Viral URTI (Confidence: 88%)
+- Streptococcal Pharyngitis (Confidence: 32%)
 
-    # Default Cardiology Note
+Clinical Insights:
+- No indication for antibiotics at this stage; viral etiology likely
+- Monitor for breathlessness or SpO2 drop
+
+Symptom Predictions:
+- Full recovery expected in 5–7 days with supportive care
+- Low risk of complications if hydration maintained
+
+Historical Comparison:
+No relevant prior visit found for this complaint."""
+
+    # Topic 4: BP / Hypertension / Cardiac / Chest pain
+    elif any(k in lower_prompt for k in ["bp", "blood pressure", "hypertension", "seene", "chest", "breath", "saans", "heart", "cardiac"]):
+        return """SOAP Note:
+S:
+- Mild chest tightness and discomfort during moderate exertion
+- Subsides after 5–10 min rest; no radiation to arm or jaw
+- No nausea or cold sweats reported
+- Patient states: "Tez chalte waqt seene me tightness hoti hai"
+
+O:
+- BP: 135/85 mmHg (self-monitored) | HR: 78 bpm | SpO2: 98%
+- Cardiovascular: Normal S1/S2, no murmurs
+- Lungs: Clear bilaterally
+
+A:
+- Stable angina symptoms under clinical evaluation
+- Mild hypertension under satisfactory control [H]
+
+P:
+- Continue Amlodipine 5mg OD as prescribed [H]
+- Sorbitrate 5mg SL PRN for acute chest discomfort
+- Schedule ECG and cardiology outpatient referral
+- Lipid profile, CBC, BMP baseline workup
+- Low-sodium diet; light walking as tolerated
+
+Diagnosis Suggestions:
+- Stable Angina Pectoris (Confidence: 79%)
+- Hypertensive Heart Disease (Confidence: 61%)
+
+Clinical Insights:
+- Exertional pattern is consistent with stable angina; urgent ECG needed
+- Amlodipine compliance should be confirmed at each visit [H]
+
+Symptom Predictions:
+- Stable prognosis with medication adherence and lifestyle changes
+- Risk escalation if ECG shows ischemic changes
+
+Historical Comparison:
+No relevant prior visit found for this complaint."""
+
+    # Default: General / Unknown
     else:
-        return f"""# CLINICAL SOAP NOTE SUMMARY (CARDIOLOGY ENCOUNTER)
+        return """SOAP Note:
+S:
+- Patient presents for general consultation
+- Chief complaint not clearly specified in current conversation
+- Further history taking recommended
 
-## Patient Information
-- **Name:** {patient_name}
-- **Date of Consultation:** Aug 22, 2026
-- **Specialty Center:** Cardiology Department
+O:
+- Not provided
 
----
+A:
+- Insufficient clinical data for specific assessment
+- Requires complete history and physical examination
 
-## 1. Subjective (S)
-- Patient reports experiencing mild chest tightness and localized discomfort during moderate exertion.
-- Patient states: "I feel some tightness when I walk fast, but it subsides after resting for 5-10 minutes."
-- No reports of active radiation of pain to left arm or jaw. No active nausea or cold sweats.
+P:
+- Conduct thorough clinical assessment
+- Order relevant investigations based on history
+- Schedule follow-up after workup
 
-## 2. Objective (O)
-- **Blood Pressure (BP):** 135/85 mmHg (Self-monitored at home)
-- **Heart Rate (HR):** 78 bpm
-- **SpO2:** 98% on room air
-- **Cardiovascular Exam:** Normal S1, S2, no murmurs. Lungs clear to auscultation bilaterally.
+Diagnosis Suggestions:
+- Undifferentiated Clinical Presentation (Confidence: N/A)
 
-## 3. Assessment (A)
-- Stable Angina symptoms under clinical evaluation.
-- Mild hypertension under satisfactory control.
-- Heart rate and peripheral perfusion remain stable.
+Clinical Insights:
+- More detailed patient history needed for accurate documentation
 
-## 4. Plan (P)
-- **Medications:** 
-  - Continue Tablet Amlodipine 5mg once daily as prescribed.
-  - Advised Tablet Sorbitrate 5mg sublingually strictly as needed (PRN) for acute chest discomfort.
-- **Diagnostic/Workup:** 
-  - Scheduled Electrocardiogram (ECG) and referral to cardiology outpatient clinic.
-  - Baseline Lipids panel, CBC, and BMP requested.
-- **Lifestyle counseling:** Limit high-sodium diet, proceed with light walking as tolerated, and seek emergency room evaluation immediately if chest pain is unrelieved by rest or lasts > 15 minutes."""
+Symptom Predictions:
+- Unable to predict without sufficient clinical data
+
+Historical Comparison:
+No relevant prior visit found for this complaint."""
+
+
+import re
 
 def generate_response(prompt):
     current_key = os.getenv("GROQ_API_KEY")
@@ -187,7 +229,10 @@ def generate_response(prompt):
                 }
             ]
         )
-        return response.choices[0].message.content
+        content = response.choices[0].message.content or ""
+        # Strip any <think> tags if model emits them
+        cleaned_content = re.sub(r"<think>[\s\S]*?</think>", "", content).strip()
+        return cleaned_content if cleaned_content else content
     except Exception as e:
         print("Groq API call failed. Falling back to clinical SOAP Note:", str(e))
         return get_clinical_soap_fallback(prompt)

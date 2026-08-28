@@ -145,3 +145,41 @@ def login_user(req: LoginRequest, db: Session = Depends(get_db)):
             "patient_id": patient_id
         }
     }
+
+class UserUpdateRequest(BaseModel):
+    name: str
+    email: str
+    specialty: Optional[str] = None
+
+@router.put("/auth/user/{user_id}/update")
+def update_user(user_id: int, req: UserUpdateRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if req.email != user.email:
+        existing = db.query(User).filter(User.email == req.email).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already taken")
+            
+    try:
+        user.name = req.name
+        user.email = req.email
+        user.specialty = req.specialty
+        db.commit()
+        db.refresh(user)
+        return {
+            "success": True,
+            "message": "User details updated successfully",
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role,
+                "specialty": user.specialty,
+                "patient_id": user.patient_id
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

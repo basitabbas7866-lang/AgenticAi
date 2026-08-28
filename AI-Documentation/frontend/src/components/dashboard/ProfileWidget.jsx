@@ -14,9 +14,11 @@ import {
   FaWhatsapp,
   FaPills,
   FaExclamationCircle,
-  FaUserNurse
+  FaUserNurse,
+  FaCamera,
+  FaEdit
 } from "react-icons/fa";
-import { getPatientReviews, getDoctors, assignDoctor, getPatientPrescriptions } from "../../api";
+import { getPatientReviews, getDoctors, assignDoctor, getPatientPrescriptions, updatePatient } from "../../api";
 
 function ProfileWidget({ patient }) {
   const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -44,6 +46,203 @@ function ProfileWidget({ patient }) {
   // Custom doctor name input state
   const [customDoctorName, setCustomDoctorName] = useState("");
   const [customDoctors, setCustomDoctors] = useState([]);
+
+  // Profile Customization State
+  const [profilePic, setProfilePic] = useState(() => {
+    if (patient?.patient_id) {
+      return localStorage.getItem(`patient_profile_pic_${patient.patient_id}`) || "";
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    if (patient?.patient_id) {
+      setProfilePic(localStorage.getItem(`patient_profile_pic_${patient.patient_id}`) || "");
+    }
+  }, [patient?.patient_id]);
+
+  // Doctor/Nurse Profile Customization State
+  const [docProfilePic, setDocProfilePic] = useState(() => {
+    if (loggedInUser.id) {
+      return localStorage.getItem(`doctor_profile_pic_${loggedInUser.id}`) || "";
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    if (loggedInUser.id) {
+      setDocProfilePic(localStorage.getItem(`doctor_profile_pic_${loggedInUser.id}`) || "");
+    }
+  }, [loggedInUser.id]);
+
+  const handleDocPhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      if (loggedInUser.id) {
+        localStorage.setItem(`doctor_profile_pic_${loggedInUser.id}`, base64String);
+      }
+      setDocProfilePic(base64String);
+      window.location.reload(); // Refresh to update sidebar too
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const [isEditingDoc, setIsEditingDoc] = useState(false);
+  const [editDocName, setEditDocName] = useState(fullName);
+  const [editDocEmail, setEditDocEmail] = useState(loggedInUser.email || "");
+  const [editDocSpecialty, setEditDocSpecialty] = useState(loggedInUser.specialty || "");
+  const [editDocHospital, setEditDocHospital] = useState(() => {
+    return localStorage.getItem(`doctor_hospital_${loggedInUser.id}`) || "Metro General Hospital";
+  });
+  const [editDocLicense, setEditDocLicense] = useState(() => {
+    return localStorage.getItem(`doctor_license_${loggedInUser.id}`) || `LIC-${98000 + (loggedInUser.id || 124)}`;
+  });
+  const [editDocPhone, setEditDocPhone] = useState(() => {
+    return localStorage.getItem(`doctor_phone_${loggedInUser.id}`) || "+91-98765-43210";
+  });
+  const [editDocBio, setEditDocBio] = useState(() => {
+    return localStorage.getItem(`doctor_bio_${loggedInUser.id}`) || "Experienced medical specialist dedicated to evidence-based clinical practices and patient coordination.";
+  });
+  const [editDocConsultationHours, setEditDocConsultationHours] = useState(() => {
+    return localStorage.getItem(`doctor_hours_${loggedInUser.id}`) || "Mon-Fri (09:00 AM - 05:00 PM)";
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editAge, setEditAge] = useState("");
+  const [editGender, setEditGender] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [showChangeDoctor, setShowChangeDoctor] = useState(false);
+
+  // Blood Group & Allergies States
+  const [bloodGroup, setBloodGroup] = useState(() => {
+    if (patient?.patient_id) {
+      return localStorage.getItem(`patient_blood_group_${patient.patient_id}`) || "Not Recorded";
+    }
+    return "Not Recorded";
+  });
+  const [allergies, setAllergies] = useState(() => {
+    if (patient?.patient_id) {
+      return localStorage.getItem(`patient_allergies_${patient.patient_id}`) || "None Documented";
+    }
+    return "None Documented";
+  });
+
+  useEffect(() => {
+    if (patient?.patient_id) {
+      setBloodGroup(localStorage.getItem(`patient_blood_group_${patient.patient_id}`) || "Not Recorded");
+      setAllergies(localStorage.getItem(`patient_allergies_${patient.patient_id}`) || "None Documented");
+    }
+  }, [patient?.patient_id]);
+
+  const [editBloodGroup, setEditBloodGroup] = useState("");
+  const [editAllergies, setEditAllergies] = useState("");
+
+  const handleEditClick = () => {
+    setEditName(patient?.name || fullName);
+    setEditAge(patient?.age || "");
+    setEditGender(patient?.gender || "Male");
+    setEditPhone(patient?.phone || "");
+    setEditBloodGroup(localStorage.getItem(`patient_blood_group_${patient?.patient_id}`) || "");
+    setEditAllergies(localStorage.getItem(`patient_allergies_${patient?.patient_id}`) || "");
+    setIsEditing(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      alert("Name cannot be empty.");
+      return;
+    }
+    try {
+      const targetId = patient?.patient_id || "P1010";
+      const payload = {
+        name: editName,
+        age: parseInt(editAge) || 0,
+        gender: editGender,
+        phone: editPhone
+      };
+      const res = await updatePatient(targetId, payload);
+      if (res.data.success) {
+        // Also update the local storage user object if the name changed
+        const currentLocalUser = JSON.parse(localStorage.getItem("user") || "{}");
+        if (currentLocalUser.role === "patient") {
+          currentLocalUser.name = editName;
+          localStorage.setItem("user", JSON.stringify(currentLocalUser));
+        }
+        // Save blood group & allergies locally
+        localStorage.setItem(`patient_blood_group_${targetId}`, editBloodGroup);
+        localStorage.setItem(`patient_allergies_${targetId}`, editAllergies);
+        setBloodGroup(editBloodGroup || "Not Recorded");
+        setAllergies(editAllergies || "None Documented");
+
+        setIsEditing(false);
+        alert("Profile details updated successfully!");
+        window.location.reload();
+      } else {
+        alert(res.data.message || "Failed to update profile.");
+      }
+    } catch (err) {
+      console.error("Error updating patient profile:", err);
+      alert("An error occurred while saving profile changes.");
+    }
+  };
+
+  const handleSaveDocProfile = async () => {
+    if (!editDocName.trim()) {
+      alert("Name cannot be empty.");
+      return;
+    }
+    try {
+      const { updateUser } = await import("../../api");
+      const res = await updateUser(loggedInUser.id, {
+        name: editDocName,
+        email: editDocEmail,
+        specialty: editDocSpecialty
+      });
+
+      if (res.data.success) {
+        // Update user session details
+        const updatedLocalUser = { ...loggedInUser };
+        updatedLocalUser.name = editDocName;
+        updatedLocalUser.email = editDocEmail;
+        updatedLocalUser.specialty = editDocSpecialty;
+        localStorage.setItem("user", JSON.stringify(updatedLocalUser));
+
+        // Save local items
+        localStorage.setItem(`doctor_hospital_${loggedInUser.id}`, editDocHospital);
+        localStorage.setItem(`doctor_license_${loggedInUser.id}`, editDocLicense);
+        localStorage.setItem(`doctor_phone_${loggedInUser.id}`, editDocPhone);
+        localStorage.setItem(`doctor_bio_${loggedInUser.id}`, editDocBio);
+        localStorage.setItem(`doctor_hours_${loggedInUser.id}`, editDocConsultationHours);
+
+        setIsEditingDoc(false);
+        alert("Practitioner profile details updated successfully!");
+        window.location.reload();
+      } else {
+        alert(res.data.message || "Failed to update profile.");
+      }
+    } catch (err) {
+      console.error("Error updating doctor profile:", err);
+      alert("An error occurred while saving profile changes.");
+    }
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result;
+      const targetId = patient?.patient_id || "P1010";
+      localStorage.setItem(`patient_profile_pic_${targetId}`, base64String);
+      setProfilePic(base64String);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Combine custom + registered doctors for dropdown; custom entries appear first
   const allDoctors = [
@@ -216,16 +415,140 @@ function ProfileWidget({ patient }) {
             </div>
 
             <div className="w-full flex flex-col items-center mt-6">
-              <div className="relative mb-5">
-                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#1a7f8e] to-[#2b6cb0] p-1 shadow-md">
-                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[#1a7f8e] font-black text-3xl shadow-inner font-mono">
-                    {initials}
+              <div className="relative mb-5 group/avatar">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#1a7f8e] to-[#2b6cb0] p-1 shadow-md relative overflow-hidden">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[#1a7f8e] font-black text-3xl shadow-inner font-mono overflow-hidden">
+                    {profilePic ? (
+                      <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      initials
+                    )}
                   </div>
+                  
+                  {/* Camera overlay */}
+                  <label className="absolute inset-0 bg-black/45 rounded-full flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-bold">
+                    <FaCamera className="text-base mb-1" />
+                    Upload
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handlePhotoUpload} 
+                      className="hidden" 
+                    />
+                  </label>
                 </div>
               </div>
-              <h2 className="text-[#1a3b6e] text-lg font-black m-0 leading-tight">{fullName}</h2>
-              <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider mt-2">Patient ID: {patient?.patient_id || "P1010"}</span>
-              <span className="text-[9px] text-[#1a7f8e] font-bold mt-1">General Health Plan Active</span>
+
+              {isEditing ? (
+                <div className="w-full mt-2 space-y-3 bg-white/70 p-4 rounded-2xl border border-slate-200/50 text-left">
+                  <div>
+                    <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Full Name</label>
+                    <input 
+                      type="text" 
+                      value={editName} 
+                      onChange={e => setEditName(e.target.value)} 
+                      className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Age</label>
+                      <input 
+                        type="number" 
+                        value={editAge} 
+                        onChange={e => setEditAge(e.target.value)} 
+                        className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Gender</label>
+                      <select 
+                        value={editGender} 
+                        onChange={e => setEditGender(e.target.value)}
+                        className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-bold text-slate-700"
+                      >
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Phone Number</label>
+                    <input 
+                      type="text" 
+                      value={editPhone} 
+                      onChange={e => setEditPhone(e.target.value)} 
+                      className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Blood Group</label>
+                      <input 
+                        type="text" 
+                        value={editBloodGroup} 
+                        onChange={e => setEditBloodGroup(e.target.value)} 
+                        placeholder="e.g. O+"
+                        className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Allergies</label>
+                      <input 
+                        type="text" 
+                        value={editAllergies} 
+                        onChange={e => setEditAllergies(e.target.value)} 
+                        placeholder="e.g. None"
+                        className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 pt-1.5">
+                    <button 
+                      onClick={handleSaveProfile}
+                      className="flex-1 py-2 rounded-xl bg-[#1a7f8e] text-white font-extrabold text-[10px] uppercase cursor-pointer hover:bg-[#166d7a] transition-all"
+                    >
+                      Save
+                    </button>
+                    <button 
+                      onClick={() => setIsEditing(false)}
+                      className="flex-1 py-2 rounded-xl bg-slate-200 text-slate-600 font-extrabold text-[10px] uppercase cursor-pointer hover:bg-slate-300 transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-[#1a3b6e] text-lg font-black m-0 leading-tight">{patient?.name || fullName}</h2>
+                  <span className="text-[10px] text-slate-500 font-extrabold uppercase tracking-wider mt-2">Patient ID: {patient?.patient_id || "P1010"}</span>
+                  
+                  <div className="flex flex-col gap-1 mt-2 text-center text-[10px] text-slate-500 font-semibold w-full px-2">
+                    <span>Age: {patient?.age || "N/A"} • Gender: {patient?.gender || "N/A"}</span>
+                    <span>Phone: {patient?.phone || "N/A"}</span>
+                    <div className="border-t border-slate-100/60 my-1 pt-1.5 grid grid-cols-2 gap-2 text-slate-600">
+                      <div>
+                        <span className="text-[7.5px] text-slate-400 font-extrabold uppercase block leading-none">Blood Type</span>
+                        <span className="text-[10px] font-black text-[#1a3b6e] mt-1 block">{bloodGroup}</span>
+                      </div>
+                      <div>
+                        <span className="text-[7.5px] text-slate-400 font-extrabold uppercase block leading-none">Allergies</span>
+                        <span className="text-[10px] font-black text-rose-600 mt-1 block truncate" title={allergies}>{allergies}</span>
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-[#1a7f8e] font-extrabold mt-1">General Health Plan Active</span>
+                  </div>
+
+                  <button 
+                    onClick={handleEditClick}
+                    className="mt-3 px-4 py-2 rounded-full border border-[#1a7f8e]/35 bg-white text-[#1a7f8e] hover:bg-[#1a7f8e]/10 text-[9px] font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
+                  >
+                    <FaEdit />
+                    <span>Edit Profile Details</span>
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center gap-2 mt-6">
@@ -264,42 +587,13 @@ function ProfileWidget({ patient }) {
                   <div className="flex flex-col gap-3">
                     <label className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider">Select Specialist Doctor</label>
 
-                    {/* Custom doctor name input row */}
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="text"
-                        value={customDoctorName}
-                        onChange={e => setCustomDoctorName(e.target.value)}
-                        onKeyDown={e => e.key === "Enter" && handleAddCustomDoctor()}
-                        placeholder="Or type doctor name manually..."
-                        className="flex-1 h-9 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold outline-none focus:border-[#1a7f8e] transition-all placeholder-slate-400"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleAddCustomDoctor}
-                        disabled={!customDoctorName.trim()}
-                        className="h-9 px-4 rounded-xl bg-[#1a7f8e] text-white text-[10px] font-extrabold uppercase tracking-wide cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#166d7a] transition-all active:scale-95 shrink-0"
-                      >
-                        + Add
-                      </button>
-                    </div>
-
-                    {/* Dropdown — custom doctors appear at top */}
+                    {/* Dropdown — registered specialists */}
                     <select
                       value={selectedDoctorId}
                       onChange={(e) => setSelectedDoctorId(e.target.value)}
                       className="h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold outline-none focus:border-[#1a7f8e]"
                     >
                       <option value="">-- Choose registered doctor --</option>
-                      {customDoctors.length > 0 && (
-                        <optgroup label="─── Custom / External Doctors">
-                          {customDoctors.map(doc => (
-                            <option key={doc.id} value={doc.id}>
-                              {doc.name} (External)
-                            </option>
-                          ))}
-                        </optgroup>
-                      )}
                       {doctors.length > 0 && (
                         <optgroup label="─── Registered Specialists">
                           {doctors.map(doc => (
@@ -321,20 +615,29 @@ function ProfileWidget({ patient }) {
                   </button>
                 </div>
               ) : !isApproved ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center text-slate-500 animate-fadeIn px-4">
+                <div className="flex flex-col items-center justify-center py-10 text-center text-slate-500 animate-fadeIn px-4">
                   <FaExclamationCircle className="text-amber-500 text-2xl mb-3 animate-pulse" />
-                  <h4 className="text-xs text-[#1a3b6e] font-black uppercase tracking-wider m-0">Intake Approval Pending</h4>
+                  <h4 className="text-xs text-[#1a3b6e] font-black uppercase tracking-wider m-0">Awaiting Confirmation from Your Doctor</h4>
                   <p className="text-[10px] max-w-sm mt-2 leading-relaxed font-semibold text-slate-500">
-                    Your request has been successfully sent to <strong className="text-slate-700">{assignedDocInfo ? assignedDocInfo.name : "Specialist Doctor"}</strong> ({assignedDocInfo ? (assignedDocInfo.specialty || "General Medicine") : "N/A"}).
+                    We've forwarded your request to <strong className="text-slate-700">{assignedDocInfo ? assignedDocInfo.name : "your selected specialist"}</strong>
+                    {assignedDocInfo?.specialty ? ` (${assignedDocInfo.specialty})` : ""}. They will review your intake details and confirm at the earliest.
                   </p>
-                  <div className="bg-amber-50/50 border border-amber-200 rounded-xl p-3.5 mt-4 text-left max-w-md">
-                    <span className="text-[8.5px] text-amber-800 font-extrabold uppercase tracking-wider block mb-1">How to test this:</span>
-                    <span className="text-[9.5px] text-amber-700 font-semibold block leading-relaxed">
-                      1. Click <strong>Sign Out</strong>.<br/>
-                      2. Log in as a Doctor with email: <strong>{assignedDocInfo ? assignedDocInfo.email : "doctor@careweave.com"}</strong>.<br/>
-                      3. Select your patient in the Patients Directory.<br/>
-                      4. Click the <strong>Approve Intake</strong> button on the chart to start consultation.
-                    </span>
+                  <div className="bg-sky-50 border border-sky-200 rounded-xl p-4 mt-4 text-left max-w-md w-full">
+                    <span className="text-[8.5px] text-sky-800 font-extrabold uppercase tracking-wider block mb-2">What happens next?</span>
+                    <ul className="space-y-1.5 m-0 pl-0 list-none">
+                      <li className="text-[9.5px] text-sky-700 font-semibold flex items-start gap-1.5">
+                        <span className="text-sky-400 mt-0.5 shrink-0">✓</span>
+                        Your doctor will review your details and confirm the appointment.
+                      </li>
+                      <li className="text-[9.5px] text-sky-700 font-semibold flex items-start gap-1.5">
+                        <span className="text-sky-400 mt-0.5 shrink-0">✓</span>
+                        Once confirmed, your care plan and video consultation will be ready for you here.
+                      </li>
+                      <li className="text-[9.5px] text-sky-700 font-semibold flex items-start gap-1.5">
+                        <span className="text-sky-400 mt-0.5 shrink-0">✓</span>
+                        You'll be able to view your prescriptions and health records after approval.
+                      </li>
+                    </ul>
                   </div>
                 </div>
               ) : (
@@ -353,6 +656,51 @@ function ProfileWidget({ patient }) {
                     </div>
                     <span className={`text-[8px] font-extrabold px-2.5 py-0.5 rounded-full uppercase font-mono border ${isLockedByPrescription ? 'bg-rose-100 text-rose-800 border-rose-200 animate-pulse' : 'bg-emerald-600 text-white border-emerald-700'}`}>{isLockedByPrescription ? "🔒 Primary locked" : "Approved"}</span>
                   </div>
+
+                  {showChangeDoctor ? (
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 animate-fadeIn text-left">
+                      <span className="text-[10px] text-[#1a3b6e] font-extrabold uppercase block">Request Consultation with another Specialist:</span>
+                      <select
+                        value={selectedDoctorId}
+                        onChange={(e) => setSelectedDoctorId(e.target.value)}
+                        className="w-full h-10 px-3 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold outline-none focus:border-[#1a7f8e]"
+                      >
+                        <option value="">-- Choose registered doctor --</option>
+                        {doctors.map(doc => (
+                          <option key={doc.id} value={doc.id}>
+                            {doc.name} (Specialty: {doc.specialty || "General Medicine"})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleAssignDoctor}
+                          disabled={!selectedDoctorId || assigning}
+                          className="flex-1 py-2 rounded-xl bg-[#1a7f8e] text-white font-extrabold text-[10px] uppercase cursor-pointer hover:bg-[#166d7a] transition-all disabled:opacity-50"
+                        >
+                          {assigning ? "Requesting intake..." : "Submit New Request"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowChangeDoctor(false);
+                            setSelectedDoctorId("");
+                          }}
+                          className="flex-1 py-2 rounded-xl bg-slate-200 text-slate-600 font-extrabold text-[10px] uppercase cursor-pointer hover:bg-slate-300 transition-all"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    !isLockedByPrescription && (
+                      <button
+                        onClick={() => setShowChangeDoctor(true)}
+                        className="px-4 py-2 rounded-xl border border-[#1a7f8e]/35 bg-white text-[#1a7f8e] hover:bg-[#1a7f8e]/10 text-[9px] font-extrabold uppercase tracking-wider transition-all cursor-pointer w-fit self-start active:scale-95 shadow-sm"
+                      >
+                        Request Consultation with a Different Doctor
+                      </button>
+                    )
+                  )}
 
                   <div className="flex flex-col gap-3.5 text-left">
                     <div className="flex flex-col gap-1">
@@ -439,7 +787,7 @@ function ProfileWidget({ patient }) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         
         {/* LEFT CARD: Holographic Clinical ID Badge (lg:col-span-4) */}
-        <div className="lg:col-span-4 bg-gradient-to-b from-[#1a3b6e]/5 to-[#1a7f8e]/10 border border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-between text-center shadow-lg relative overflow-hidden min-h-[420px] transition-all hover:shadow-xl hover:border-[#1a7f8e]/40 group">
+        <div className="lg:col-span-4 bg-gradient-to-b from-[#1a3b6e]/5 to-[#1a7f8e]/10 border border-slate-200 rounded-3xl p-6 flex flex-col items-center justify-between text-center shadow-lg relative overflow-hidden min-h-[420px] transition-all hover:shadow-xl hover:border-[#1a7f8e]/40 group/avatar">
           {/* Top blue/teal indicator bar */}
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#1c4d8d] via-[#1a7f8e] to-[#00c988]" />
           
@@ -451,22 +799,63 @@ function ProfileWidget({ patient }) {
 
           <div className="w-full flex flex-col items-center mt-6">
             {/* Avatar Group */}
-            <div className="relative mb-5">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#1a7f8e] via-[#2b6cb0] to-[#00909e] p-1 shadow-md group-hover:scale-105 transition-transform">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[#1a7f8e] font-black text-3xl shadow-inner font-mono tracking-tight">
-                  {initials}
+            <div className="relative mb-5 group/avatar">
+              <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-[#1a7f8e] via-[#2b6cb0] to-[#00909e] p-1 shadow-md group-hover:scale-105 transition-transform overflow-hidden relative">
+                <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[#1a7f8e] font-black text-3xl shadow-inner font-mono tracking-tight overflow-hidden">
+                  {docProfilePic ? (
+                    <img src={docProfilePic} alt="Clinician Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    initials
+                  )}
                 </div>
               </div>
-              <span className="absolute bottom-1 right-2 w-5 h-5 bg-[#00c988] border-4 border-white rounded-full shadow-md" />
+              
+              {/* Camera overlay */}
+              <label className="absolute inset-0 bg-black/45 rounded-full flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity cursor-pointer text-white text-[10px] font-bold">
+                <FaCamera className="text-base mb-1" />
+                Upload
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleDocPhotoUpload} 
+                  className="hidden" 
+                />
+              </label>
+              <span className="absolute bottom-1 right-2 w-5 h-5 bg-[#00c988] border-4 border-white rounded-full shadow-md z-10" />
             </div>
 
-            <h2 className="text-[#1a3b6e] text-lg font-black m-0 leading-tight tracking-tight">{fullName}</h2>
-            <span className="text-[10px] text-[#1a7f8e] font-extrabold uppercase tracking-wider mt-2 px-3 py-1 bg-[#1a7f8e]/10 rounded-full">
-              {userRole === "doctor" ? "Attending Physician" : userRole === "nurse" ? "Registered Nurse" : "Patient"}
-            </span>
-            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1.5">
-              {userRole === "doctor" ? "Lead Medical Officer" : "Clinical Coordinator"}
-            </span>
+            {isEditingDoc ? (
+              <div className="w-full space-y-2.5 mt-1 text-left">
+                <div>
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-0.5">Practitioner Name</label>
+                  <input 
+                    type="text" 
+                    value={editDocName} 
+                    onChange={e => setEditDocName(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-bold text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-0.5">Clinical Email</label>
+                  <input 
+                    type="email" 
+                    value={editDocEmail} 
+                    onChange={e => setEditDocEmail(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-[#1a3b6e] text-lg font-black m-0 leading-tight tracking-tight">{loggedInUser.name || fullName}</h2>
+                <span className="text-[10px] text-[#1a7f8e] font-extrabold uppercase tracking-wider mt-2 px-3 py-1 bg-[#1a7f8e]/10 rounded-full">
+                  {userRole === "doctor" ? "Attending Physician" : userRole === "nurse" ? "Registered Nurse" : "Patient"}
+                </span>
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1.5">
+                  {userRole === "doctor" ? "Lead Medical Officer" : "Clinical Coordinator"}
+                </span>
+              </>
+            )}
           </div>
 
           {/* Secure access token */}
@@ -492,74 +881,172 @@ function ProfileWidget({ patient }) {
               <span className="text-[#1a3b6e] text-xs font-extrabold uppercase tracking-wider">Practitioner Registry Parameters</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
-                    <FaHospital className="text-xs" />
+            {isEditingDoc ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-left">
+                <div>
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Affiliated Hospital/Node</label>
+                  <input 
+                    type="text" 
+                    value={editDocHospital} 
+                    onChange={e => setEditDocHospital(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Specialty Domain</label>
+                  <input 
+                    type="text" 
+                    value={editDocSpecialty} 
+                    onChange={e => setEditDocSpecialty(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">License Reference ID</label>
+                  <input 
+                    type="text" 
+                    value={editDocLicense} 
+                    onChange={e => setEditDocLicense(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-mono text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Contact Phone</label>
+                  <input 
+                    type="text" 
+                    value={editDocPhone} 
+                    onChange={e => setEditDocPhone(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                  />
+                </div>
+                <div>
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Consultation Hours</label>
+                  <input 
+                    type="text" 
+                    value={editDocConsultationHours} 
+                    onChange={e => setEditDocConsultationHours(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] font-semibold text-slate-700"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-[8px] text-slate-500 font-extrabold uppercase block mb-1">Clinical Bio & Expert Profile</label>
+                  <textarea 
+                    rows="3"
+                    value={editDocBio} 
+                    onChange={e => setEditDocBio(e.target.value)} 
+                    className="w-full px-2.5 py-1.5 text-xs rounded-xl border border-slate-200 bg-white outline-none focus:border-[#1a7f8e] text-slate-700"
+                  />
+                </div>
+                <div className="flex gap-2.5 md:col-span-2 mt-2">
+                  <button 
+                    onClick={handleSaveDocProfile}
+                    className="flex-1 py-2.5 rounded-xl bg-[#1a3b6e] text-white font-extrabold text-xs uppercase cursor-pointer hover:bg-[#15305b] transition-all"
+                  >
+                    Save Changes
+                  </button>
+                  <button 
+                    onClick={() => setIsEditingDoc(false)}
+                    className="flex-1 py-2.5 rounded-xl bg-slate-200 text-slate-600 font-extrabold text-xs uppercase cursor-pointer hover:bg-slate-300 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
+                        <FaHospital className="text-xs" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">Affiliated Node</span>
+                        <span className="text-[#1a3b6e] text-xs font-bold mt-1 block">
+                          {editDocHospital}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[8.5px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-bold font-mono shrink-0">
+                      {userRole === "doctor" ? "Specialist" : "General"}
+                    </span>
                   </div>
-                  <div className="text-left">
-                    <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">Affiliated Node</span>
-                    <span className="text-[#1a3b6e] text-xs font-bold mt-1 block">
-                      {loggedInUser.specialty ? `${loggedInUser.specialty} Clinic` : "Metro General Hospital"}
+
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
+                        <FaUserMd className="text-xs" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">Specialty Domain</span>
+                        <span className="text-[#1a3b6e] text-xs font-bold mt-1 block">
+                          {loggedInUser.specialty || editDocSpecialty || "General Practitioner"}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[8.5px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-bold font-mono shrink-0">
+                      {userRole === "doctor" ? "M.D." : userRole === "nurse" ? "R.N." : "P.T."}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
+                        <FaRegIdCard className="text-xs" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">License Reference ID</span>
+                        <span className="text-[#1a3b6e] text-xs font-mono font-bold mt-1 block">
+                          {editDocLicense}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[8.5px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 font-bold uppercase shrink-0">
+                      Active
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
+                        <FaShieldAlt className="text-xs" />
+                      </div>
+                      <div className="text-left">
+                        <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">Security Compliance</span>
+                        <span className="text-[#1a3b6e] text-xs font-bold mt-1 block">HIPAA / GDPR Access</span>
+                      </div>
+                    </div>
+                    <span className="text-[8.5px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 font-bold uppercase tracking-wider flex items-center gap-1 shrink-0">
+                      <FaCheckCircle className="text-[9px]" />
+                      Passed
                     </span>
                   </div>
                 </div>
-                <span className="text-[8.5px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-bold font-mono shrink-0">
-                  {userRole === "doctor" ? "Specialist" : "General"}
-                </span>
-              </div>
 
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
-                    <FaUserMd className="text-xs" />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">Specialty Domain</span>
-                    <span className="text-[#1a3b6e] text-xs font-bold mt-1 block">
-                      {loggedInUser.specialty || (userRole === "nurse" ? "Emergency Care & Nursing" : "Internal Medicine")}
-                    </span>
+                <div className="border-t border-slate-100 pt-4 mt-4 text-left">
+                  <span className="text-[8.5px] text-[#1a3b6e] font-extrabold uppercase tracking-wider block mb-1">Clinical Profile & Consultation Info</span>
+                  <p className="text-slate-600 text-xs leading-relaxed m-0 font-medium">{editDocBio}</p>
+                  <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100/50">
+                    <div>
+                      <span className="text-[8px] text-slate-400 font-extrabold uppercase block leading-none">Consultation Hours</span>
+                      <span className="text-slate-700 text-xs font-bold mt-1.5 block">{editDocConsultationHours}</span>
+                    </div>
+                    <div>
+                      <span className="text-[8px] text-slate-400 font-extrabold uppercase block leading-none">Clinical Contact</span>
+                      <span className="text-slate-700 text-xs font-bold mt-1.5 block">{editDocPhone}</span>
+                    </div>
                   </div>
                 </div>
-                <span className="text-[8.5px] text-slate-600 bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200 font-bold font-mono shrink-0">
-                  {userRole === "doctor" ? "M.D." : userRole === "nurse" ? "R.N." : "P.T."}
-                </span>
-              </div>
 
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
-                    <FaRegIdCard className="text-xs" />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">License Reference ID</span>
-                    <span className="text-[#1a3b6e] text-xs font-mono font-bold mt-1 block">
-                      LIC-{98000 + (loggedInUser.id || 124)}
-                    </span>
-                  </div>
-                </div>
-                <span className="text-[8.5px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 font-bold uppercase shrink-0">
-                  Active
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#1a7f8e]/25 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 flex items-center justify-center text-[#1a7f8e] shrink-0">
-                    <FaShieldAlt className="text-xs" />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block leading-none">Security Compliance</span>
-                    <span className="text-[#1a3b6e] text-xs font-bold mt-1 block">HIPAA / GDPR Access</span>
-                  </div>
-                </div>
-                <span className="text-[8.5px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200 font-bold uppercase tracking-wider flex items-center gap-1 shrink-0">
-                  <FaCheckCircle className="text-[9px]" />
-                  Passed
-                </span>
-              </div>
-            </div>
+                <button 
+                  onClick={() => setIsEditingDoc(true)}
+                  className="mt-6 px-4 py-2 rounded-full border border-[#1a7f8e]/35 bg-white text-[#1a7f8e] hover:bg-[#1a7f8e]/10 text-[9px] font-extrabold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95 w-fit"
+                >
+                  <FaEdit />
+                  <span>Edit Clinician Profile</span>
+                </button>
+              </>
+            )}
           </div>
 
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mt-4 text-[10px] text-slate-500">

@@ -98,6 +98,9 @@ function PatientJourney({ patient }) {
   const [invResultFile, setInvResultFile] = useState({}); // Stores result file names per test ID
   const [showInvResultInput, setShowInvResultInput] = useState({});
 
+  const loggedInUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const role = loggedInUser.role || "doctor";
+
   const [coordinationAnalysis, setCoordinationAnalysis] = useState(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
   const [patientReviews, setPatientReviews] = useState([]);
@@ -414,7 +417,7 @@ function PatientJourney({ patient }) {
             { id: "appointments", label: "Appointments", icon: FaCalendarAlt },
             { id: "referrals", label: "Referral Tracker", icon: FaShareSquare },
             { id: "investigations", label: "Lab & Investigations", icon: FaFileMedical },
-            { id: "analysis", label: "AI Agent Analysis", icon: FaRobot }
+            ...(role === "patient" ? [{ id: "analysis", label: "AI Health Summary", icon: FaRobot }] : [])
           ].map(tab => (
             <button
               key={tab.id}
@@ -626,7 +629,9 @@ function PatientJourney({ patient }) {
           >
             {/* Appointment Booking Panel */}
             <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 h-fit shadow-sm">
-              <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">Book New Appointment</h3>
+              <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">
+                {role === "patient" ? "Request New Appointment" : "Book New Appointment"}
+              </h3>
               <form onSubmit={handleBookAppointment} className="space-y-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-slate-500 text-[10px] font-bold uppercase">Department/Service</label>
@@ -666,10 +671,12 @@ function PatientJourney({ patient }) {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 text-[10px] font-bold uppercase">Staff Coordination Notes</label>
+                  <label className="text-slate-500 text-[10px] font-bold uppercase">
+                    {role === "patient" ? "Reason for Appointment / Notes" : "Staff Coordination Notes"}
+                  </label>
                   <textarea
                     rows="3"
-                    placeholder="E.g. patient requested afternoon slot, requires wheelchair assistance..."
+                    placeholder={role === "patient" ? "E.g. experiencing mild headaches, seeking follow-up on my treatment..." : "E.g. patient requested afternoon slot, requires wheelchair assistance..."}
                     value={apptNotes}
                     onChange={(e) => setApptNotes(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
@@ -680,7 +687,7 @@ function PatientJourney({ patient }) {
                   disabled={submitting}
                   className="w-full bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white py-2 text-xs font-bold"
                 >
-                  <span>Schedule Appointment</span>
+                  <span>{role === "patient" ? "Request Appointment" : "Schedule Appointment"}</span>
                 </button>
               </form>
             </div>
@@ -802,65 +809,67 @@ function PatientJourney({ patient }) {
             exit={{ opacity: 0, y: -10 }}
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            {/* Outgoing Referral form */}
-            <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 h-fit shadow-sm">
-              <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">Issue Clinic Referral</h3>
-              <form onSubmit={handleIssueReferral} className="space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 text-[10px] font-bold uppercase">Referring Department</label>
-                  <input
-                    type="text"
-                    required
-                    value={refReferring}
-                    onChange={(e) => setRefReferring(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 text-[10px] font-bold uppercase">Referred Specialty Unit / Doctor</label>
-                  <input
-                    type="text"
-                    required
-                    value={refReferred}
-                    onChange={(e) => setRefReferred(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 text-[10px] font-bold uppercase">Priority</label>
-                  <select
-                    value={refPriority}
-                    onChange={(e) => setRefPriority(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
+            {/* Outgoing Referral form - Only show for non-patients */}
+            {role !== "patient" && (
+              <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 h-fit shadow-sm">
+                <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">Issue Clinic Referral</h3>
+                <form onSubmit={handleIssueReferral} className="space-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-500 text-[10px] font-bold uppercase">Referring Department</label>
+                    <input
+                      type="text"
+                      required
+                      value={refReferring}
+                      onChange={(e) => setRefReferring(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-500 text-[10px] font-bold uppercase">Referred Specialty Unit / Doctor</label>
+                    <input
+                      type="text"
+                      required
+                      value={refReferred}
+                      onChange={(e) => setRefReferred(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-500 text-[10px] font-bold uppercase">Priority</label>
+                    <select
+                      value={refPriority}
+                      onChange={(e) => setRefPriority(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
+                    >
+                      <option value="Routine">Routine Care</option>
+                      <option value="Urgent">Urgent Review</option>
+                      <option value="Emergency">Emergency Intake</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-500 text-[10px] font-bold uppercase">Referral Reason</label>
+                    <textarea
+                      rows="3"
+                      required
+                      placeholder="Provide detailed clinical query and diagnostics findings..."
+                      value={refReason}
+                      onChange={(e) => setRefReason(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white py-2 text-xs font-bold"
                   >
-                    <option value="Routine">Routine Care</option>
-                    <option value="Urgent">Urgent Review</option>
-                    <option value="Emergency">Emergency Intake</option>
-                  </select>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 text-[10px] font-bold uppercase">Referral Reason</label>
-                  <textarea
-                    rows="3"
-                    required
-                    placeholder="Provide detailed clinical query and diagnostics findings..."
-                    value={refReason}
-                    onChange={(e) => setRefReason(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white py-2 text-xs font-bold"
-                >
-                  <span>Issue Referral Order</span>
-                </button>
-              </form>
-            </div>
+                    <span>Issue Referral Order</span>
+                  </button>
+                </form>
+              </div>
+            )}
 
             {/* Referral Track board */}
-            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <div className={`${role === "patient" ? "lg:col-span-3" : "lg:col-span-2"} bg-white border border-slate-200 rounded-xl p-6 shadow-sm`}>
               <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">Clinical Referral Board</h3>
 
               {loadingRefs ? (
@@ -900,29 +909,36 @@ function PatientJourney({ patient }) {
                           </div>
                           
                           {/* Actions */}
+                          {/* Actions */}
                           <div className="flex items-center gap-2.5 sm:self-center flex-wrap">
-                            {ref.status !== "COMPLETED" && ref.status !== "CANCELLED" && (
+                            {role !== "patient" ? (
                               <>
-                                <select
-                                  onChange={(e) => {
-                                    const nextStatus = e.target.value;
-                                    if (nextStatus === "APPOINTMENT_SCHEDULED") {
-                                      setShowRefApptInput(prev => ({ ...prev, [ref.referral_id]: true }));
-                                    } else {
-                                      handleUpdateReferralStatus(ref.referral_id, nextStatus);
-                                    }
-                                  }}
-                                  value={ref.status}
-                                  className="bg-slate-100 border border-slate-200 text-slate-600 text-[9px] font-bold px-2 py-1 rounded-lg focus:outline-none"
-                                >
-                                  <option value="CREATED">CREATED</option>
-                                  <option value="SENT">SENT</option>
-                                  <option value="ACCEPTED">ACCEPTED</option>
-                                  <option value="COMPLETED">COMPLETED</option>
-                                  <option value="CANCELLED">CANCELLED</option>
-                                  <option value="OVERDUE">OVERDUE</option>
-                                </select>
+                                {ref.status !== "COMPLETED" && ref.status !== "CANCELLED" && (
+                                  <select
+                                    onChange={(e) => {
+                                      const nextStatus = e.target.value;
+                                      if (nextStatus === "APPOINTMENT_SCHEDULED") {
+                                        setShowRefApptInput(prev => ({ ...prev, [ref.referral_id]: true }));
+                                      } else {
+                                        handleUpdateReferralStatus(ref.referral_id, nextStatus);
+                                      }
+                                    }}
+                                    value={ref.status}
+                                    className="bg-slate-100 border border-slate-200 text-slate-600 text-[9px] font-bold px-2 py-1 rounded-lg focus:outline-none cursor-pointer hover:bg-slate-200"
+                                  >
+                                    <option value="CREATED">CREATED</option>
+                                    <option value="SENT">SENT</option>
+                                    <option value="ACCEPTED">ACCEPTED</option>
+                                    <option value="COMPLETED">COMPLETED</option>
+                                    <option value="CANCELLED">CANCELLED</option>
+                                    <option value="OVERDUE">OVERDUE</option>
+                                  </select>
+                                )}
                               </>
+                            ) : (
+                              <div className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase border ${statusColor}`}>
+                                Status: {ref.status}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -975,43 +991,45 @@ function PatientJourney({ patient }) {
             exit={{ opacity: 0, y: -10 }}
             className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            {/* Order Investigation Panel */}
-            <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 h-fit shadow-sm">
-              <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">Order Clinical Test</h3>
-              <form onSubmit={handleOrderInvestigation} className="space-y-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 text-[10px] font-bold uppercase">Test / Investigation Name</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Brain MRI, Renal Ultrasound, CBC Panel"
-                    value={invTestName}
-                    onChange={(e) => setInvTestName(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-slate-500 text-[10px] font-bold uppercase">Pathology Notes / Indication</label>
-                  <textarea
-                    rows="3"
-                    placeholder="Indicate diagnostic query, e.g. rule out renal artery stenosis..."
-                    value={invNotes}
-                    onChange={(e) => setInvNotes(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white py-2 text-xs font-bold"
-                >
-                  <span>Order Diagnostic Test</span>
-                </button>
-              </form>
-            </div>
+            {/* Order Investigation Panel - Hidden for patients */}
+            {role !== "patient" && (
+              <div className="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-5 h-fit shadow-sm">
+                <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">Order Clinical Test</h3>
+                <form onSubmit={handleOrderInvestigation} className="space-y-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-500 text-[10px] font-bold uppercase">Test / Investigation Name</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Brain MRI, Renal Ultrasound, CBC Panel"
+                      value={invTestName}
+                      onChange={(e) => setInvTestName(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-slate-500 text-[10px] font-bold uppercase">Pathology Notes / Indication</label>
+                    <textarea
+                      rows="3"
+                      placeholder="Indicate diagnostic query, e.g. rule out renal artery stenosis..."
+                      value={invNotes}
+                      onChange={(e) => setInvNotes(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-slate-700 text-xs focus:outline-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full bg-slate-100 border border-slate-300 text-slate-700 rounded-full font-bold px-4 py-2 hover:bg-slate-200 bg-gradient-to-r from-sky-500 to-indigo-600 border-none text-white py-2 text-xs font-bold"
+                  >
+                    <span>Order Diagnostic Test</span>
+                  </button>
+                </form>
+              </div>
+            )}
 
             {/* Tracking Dashboard */}
-            <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+            <div className={`${role === "patient" ? "lg:col-span-3" : "lg:col-span-2"} bg-white border border-slate-200 rounded-xl p-6 shadow-sm`}>
               <h3 className="text-[#1a3b6e] text-xs font-bold uppercase tracking-wider mb-4">Diagnostics Tracking Board</h3>
 
               {loadingInvs ? (
@@ -1172,11 +1190,17 @@ function PatientJourney({ patient }) {
             <div className="glass-panel border border-slate-200 rounded-[20px] p-6 bg-slate-50 text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[160px]">
               <h3 className="text-[#1a3b6e] text-sm font-black mb-2 flex items-center gap-2">
                 <FaRobot className="text-[#1a7f8e]" />
-                <span>Multi-Agent Coordination Monitor Scan</span>
+                <span>
+                  {role === "patient" ? "AI Health Summary & Next Steps" : "Multi-Agent Coordination Monitor Scan"}
+                </span>
               </h3>
               <p className="text-slate-500 text-xs max-w-xl mb-4 leading-relaxed">
-                Trigger a parallel analysis scan across all scheduled appointments, outgoing referrals, test orders, and history timelines for {patient.name}. Specialist sub-agents will coordinate their findings.
+                {role === "patient"
+                  ? "Get an instant, easy-to-understand summary of your medical history, recent lab tests, and upcoming appointments powered by AI."
+                  : `Trigger a parallel analysis scan across all scheduled appointments, outgoing referrals, test orders, and history timelines for ${patient.name}. Specialist sub-agents will coordinate their findings.`
+                }
               </p>
+              
               <button
                 type="button"
                 onClick={handleAnalyzeCoordination}
@@ -1186,12 +1210,16 @@ function PatientJourney({ patient }) {
                 {loadingAnalysis ? (
                   <>
                     <FaClock className="animate-spin text-sm" />
-                    <span>Orchestrating Specialist Sub-Agents...</span>
+                    <span>
+                      {role === "patient" ? "Reviewing your medical history..." : "Orchestrating Specialist Sub-Agents..."}
+                    </span>
                   </>
                 ) : (
                   <>
                     <FaBrain className="text-sm" />
-                    <span>Run Multi-Agent Scan</span>
+                    <span>
+                      {role === "patient" ? "Generate My Health Summary" : "Run Multi-Agent Scan"}
+                    </span>
                   </>
                 )}
               </button>
@@ -1202,27 +1230,40 @@ function PatientJourney({ patient }) {
               <div className="space-y-6">
                 {/* 1. Summary Agent Result */}
                 <div className="glass-panel border border-sky-500/20 rounded-[20px] p-6 bg-gradient-to-br from-sky-950/10 to-slate-950/40 relative overflow-hidden">
-                  <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider">SummaryAgent Report</span>
-                  <h4 className="text-[#1a3b6e] text-sm font-black mt-1 leading-tight">Patient Coordination Summary</h4>
+                  <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider">
+                    {role === "patient" ? "Personalized Health Insights" : "SummaryAgent Report"}
+                  </span>
+                  <h4 className="text-[#1a3b6e] text-sm font-black mt-1 leading-tight">
+                    {role === "patient" ? "Your Care Plan Overview" : "Patient Coordination Summary"}
+                  </h4>
                   <div className="mt-4 space-y-3 text-xs leading-relaxed">
                     <div className="text-slate-700 bg-white/60 p-3.5 rounded-xl border border-slate-200/50">
-                      <strong className="text-slate-500 font-bold uppercase text-[9px] block mb-1">Grounded Facts & References:</strong>
+                      <strong className="text-slate-500 font-bold uppercase text-[9px] block mb-1">
+                        {role === "patient" ? "Current Health Status:" : "Grounded Facts & References:"}
+                      </strong>
                       <div className="prose prose-slate max-w-none text-xs text-slate-800 leading-relaxed font-semibold">
                         {coordinationAnalysis.summary?.FACTS.split('\n').map((line, idx) => (
                           <p key={idx} className="mb-1.5">{line}</p>
                         ))}
                       </div>
                     </div>
-                    <p className="text-slate-600"><strong className="text-slate-500 font-bold uppercase text-[9px] block mb-1">Administrative Logic:</strong> {coordinationAnalysis.summary?.REASON}</p>
+                    <p className="text-slate-600">
+                      <strong className="text-slate-500 font-bold uppercase text-[9px] block mb-1">
+                        {role === "patient" ? "Clinical Context:" : "Administrative Logic:"}
+                      </strong> 
+                      {coordinationAnalysis.summary?.REASON}
+                    </p>
                     <div className="p-3.5 rounded-xl bg-[#1a7f8e]/10 border border-[#1a7f8e]/20 text-[#1a7f8e] mt-2 font-bold">
-                      <strong className="text-[#1a3b6e] font-bold uppercase text-[9px] block mb-1">Recommended Coordination Plan:</strong>
+                      <strong className="text-[#1a3b6e] font-bold uppercase text-[9px] block mb-1">
+                        {role === "patient" ? "Your Recommended Next Steps:" : "Recommended Coordination Plan:"}
+                      </strong>
                       {coordinationAnalysis.summary?.PROPOSED_ACTION}
                     </div>
                   </div>
                 </div>
 
                 {/* 2. INLINE HUMAN REVIEW QUEUE FOR ACTIVE PATIENT */}
-                {patientReviews.filter(r => r.status === 'PENDING').length > 0 && (
+                {role !== "patient" && patientReviews.filter(r => r.status === 'PENDING').length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-[#1a3b6e] text-xs font-black uppercase tracking-wider flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
@@ -1279,7 +1320,7 @@ function PatientJourney({ patient }) {
                 )}
 
                 {/* 3. INLINE HUMAN REVIEW DECISION AUDIT HISTORY FOR PATIENT */}
-                {patientReviews.filter(r => r.status !== 'PENDING').length > 0 && (
+                {role !== "patient" && patientReviews.filter(r => r.status !== 'PENDING').length > 0 && (
                   <div className="space-y-3">
                     <h3 className="text-slate-500 text-xs font-black uppercase tracking-wider">
                       Human Review Decision Audit History ({patientReviews.filter(r => r.status !== 'PENDING').length})
@@ -1314,88 +1355,91 @@ function PatientJourney({ patient }) {
                   </div>
                 )}
 
-                {/* 4. Specialized Agent Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-                  {/* AppointmentAgent Card */}
-                  <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
-                    <div className="flex items-center justify-between gap-3 mb-4">
-                      <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <FaCalendarAlt className="text-[10px]" />
-                        <span>AppointmentAgent</span>
-                      </span>
-                      {coordinationAnalysis.appointments?.REQUIRES_HUMAN_REVIEW && (
-                        <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                          Human Review
-                        </span>
-                      )}
-                    </div>
-                    <div className="space-y-3 text-xs leading-relaxed">
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.appointments?.FACTS}</p>
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.appointments?.REASON}</p>
-                      <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.appointments?.PROPOSED_ACTION}</p>
-                    </div>
-                  </div>
 
-                  {/* ReferralAgent Card */}
-                  <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
-                    <div className="flex items-center justify-between gap-3 mb-4">
-                      <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <FaShareSquare className="text-[10px]" />
-                        <span>ReferralAgent</span>
-                      </span>
-                      {coordinationAnalysis.referrals?.REQUIRES_HUMAN_REVIEW && (
-                        <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                          Human Review
+                {/* 4. Specialized Agent Grid - Hidden for patients */}
+                {role !== "patient" && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                    {/* AppointmentAgent Card */}
+                    <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          <FaCalendarAlt className="text-[10px]" />
+                          <span>AppointmentAgent</span>
                         </span>
-                      )}
+                        {coordinationAnalysis.appointments?.REQUIRES_HUMAN_REVIEW && (
+                          <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                            Human Review
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-3 text-xs leading-relaxed">
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.appointments?.FACTS}</p>
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.appointments?.REASON}</p>
+                        <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.appointments?.PROPOSED_ACTION}</p>
+                      </div>
                     </div>
-                    <div className="space-y-3 text-xs leading-relaxed">
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.referrals?.FACTS}</p>
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.referrals?.REASON}</p>
-                      <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.referrals?.PROPOSED_ACTION}</p>
-                    </div>
-                  </div>
 
-                  {/* InvestigationAgent Card */}
-                  <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
-                    <div className="flex items-center justify-between gap-3 mb-4">
-                      <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <FaFileMedical className="text-[10px]" />
-                        <span>InvestigationAgent</span>
-                      </span>
-                      {coordinationAnalysis.investigations?.REQUIRES_HUMAN_REVIEW && (
-                        <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                          Human Review
+                    {/* ReferralAgent Card */}
+                    <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          <FaShareSquare className="text-[10px]" />
+                          <span>ReferralAgent</span>
                         </span>
-                      )}
+                        {coordinationAnalysis.referrals?.REQUIRES_HUMAN_REVIEW && (
+                          <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                            Human Review
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-3 text-xs leading-relaxed">
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.referrals?.FACTS}</p>
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.referrals?.REASON}</p>
+                        <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.referrals?.PROPOSED_ACTION}</p>
+                      </div>
                     </div>
-                    <div className="space-y-3 text-xs leading-relaxed">
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.investigations?.FACTS}</p>
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.investigations?.REASON}</p>
-                      <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.investigations?.PROPOSED_ACTION}</p>
-                    </div>
-                  </div>
 
-                  {/* FollowUpAgent Card */}
-                  <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
-                    <div className="flex items-center justify-between gap-3 mb-4">
-                      <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
-                        <FaStethoscope className="text-[10px]" />
-                        <span>FollowUpAgent</span>
-                      </span>
-                      {coordinationAnalysis.followups?.REQUIRES_HUMAN_REVIEW && (
-                        <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                          Human Review
+                    {/* InvestigationAgent Card */}
+                    <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          <FaFileMedical className="text-[10px]" />
+                          <span>InvestigationAgent</span>
                         </span>
-                      )}
+                        {coordinationAnalysis.investigations?.REQUIRES_HUMAN_REVIEW && (
+                          <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                            Human Review
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-3 text-xs leading-relaxed">
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.investigations?.FACTS}</p>
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.investigations?.REASON}</p>
+                        <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.investigations?.PROPOSED_ACTION}</p>
+                      </div>
                     </div>
-                    <div className="space-y-3 text-xs leading-relaxed">
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.followups?.FACTS}</p>
-                      <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.followups?.REASON}</p>
-                      <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.followups?.PROPOSED_ACTION}</p>
+
+                    {/* FollowUpAgent Card */}
+                    <div className="glass-panel border border-slate-200 rounded-xl p-5 bg-slate-50 hover:border-slate-200 transition-colors">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <span className="text-[10px] text-[#1a7f8e] font-bold uppercase tracking-wider flex items-center gap-1.5">
+                          <FaStethoscope className="text-[10px]" />
+                          <span>FollowUpAgent</span>
+                        </span>
+                        {coordinationAnalysis.followups?.REQUIRES_HUMAN_REVIEW && (
+                          <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                            Human Review
+                          </span>
+                        )}
+                      </div>
+                      <div className="space-y-3 text-xs leading-relaxed">
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Facts Checked:</strong> {coordinationAnalysis.followups?.FACTS}</p>
+                        <p className="text-slate-600"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Scan Reason:</strong> {coordinationAnalysis.followups?.REASON}</p>
+                        <p className="text-slate-700 bg-slate-100 p-2 rounded-lg border border-slate-200/40"><strong className="text-slate-500 font-bold text-[9px] block uppercase">Proposed Action:</strong> {coordinationAnalysis.followups?.PROPOSED_ACTION}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </motion.div>

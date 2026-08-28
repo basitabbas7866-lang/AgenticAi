@@ -194,13 +194,16 @@ function DashboardPage() {
           setPatient(prev => {
             if (prev) {
               const updated = res.data.patients.find(x => x.patient_id === prev.patient_id);
-              return updated || prev;
+              return updated || (res.data.patients.length > 0 ? res.data.patients[0] : null);
             }
             return res.data.patients.length > 0 ? res.data.patients[0] : null;
           });
           
           setPatientId(prev => {
-            if (prev) return prev;
+            if (prev) {
+              const stillExists = res.data.patients.some(x => x.patient_id === prev);
+              return stillExists ? prev : (res.data.patients.length > 0 ? res.data.patients[0].patient_id : "");
+            }
             return res.data.patients.length > 0 ? res.data.patients[0].patient_id : "";
           });
         }
@@ -336,6 +339,24 @@ function DashboardPage() {
 
         {/* Dynamic Display Modules Router */}
         <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 relative z-10">
+          {role === "patient" && patient?.status === "APPROVED" && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }} 
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between gap-4 shadow-sm"
+            >
+              <div className="flex items-center gap-3 text-left">
+                <span className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center text-sm shrink-0 font-extrabold">✓</span>
+                <div>
+                  <h4 className="text-xs text-emerald-800 font-extrabold uppercase tracking-wider m-0">Intake Approved & Care Plan Activated</h4>
+                  <p className="text-[11px] text-emerald-700 font-medium m-0 mt-0.5">
+                    Your specialist has approved your intake request. Your personalized care plan timeline, prescriptions, and live teleconsultation workspace are now fully active.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {activeTab === "dashboard" && (
             <div className="w-full space-y-8">
 
@@ -441,17 +462,12 @@ function DashboardPage() {
 
                 <button
                   onClick={() => {
-                    if (role === "patient" && patient?.status !== "APPROVED") {
-                      alert("Your intake request is pending approval. Once the doctor approves your request on their portal, you can join the call.");
-                      return;
-                    }
                     setIsTeleconsultOpen(true);
                   }}
-                  disabled={role === "patient" && patient?.status !== "APPROVED"}
-                  className="btn-pill btn-amber text-sm px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl flex items-center gap-2.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="btn-pill btn-amber text-sm px-8 py-3.5 rounded-full shadow-lg hover:shadow-xl flex items-center gap-2.5 cursor-pointer"
                 >
                   <FaUserMd className="text-base" />
-                  <span>{role === "patient" ? (patient?.status === "APPROVED" ? "Enter Video Consultation" : "Consultation Pending Approval") : "Launch Teleconsultation Room"}</span>
+                  <span>{role === "patient" ? "Enter Video Consultation" : "Launch Teleconsultation Room"}</span>
                 </button>
               </div>
             </motion.div>
@@ -489,12 +505,6 @@ function DashboardPage() {
           {activeTab === "journey" && (
             <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full">
               <PatientJourney patient={patient} />
-            </motion.div>
-          )}
-
-          {activeTab === "reviews" && (
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="w-full">
-              <CoordinationReviewQueue />
             </motion.div>
           )}
 

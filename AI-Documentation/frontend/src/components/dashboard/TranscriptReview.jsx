@@ -95,11 +95,18 @@ function TranscriptReview({
       {conversation.trim().length > 0 && (
         <div className="flex justify-center pt-4">
           <button
-            onClick={() =>
+            onClick={() => {
+              const activePatient = patient || (recentPatients && recentPatients.length > 0 ? recentPatients[0] : null) || {
+                patient_id: "P1001",
+                name: "Outpatient Consultation",
+                age: "30",
+                gender: "Male",
+                phone: "+91 98765 43210"
+              };
               navigate("/soap-generation", {
-                state: { patient: patient || recentPatients[0], conversation, language }
-              })
-            }
+                state: { patient: activePatient, conversation, language }
+              });
+            }}
             className="bg-gradient-to-r from-[#e8a020] to-[#f3b236] hover:from-[#d49018] hover:to-[#e8a020] text-[#1a3b6e] font-extrabold text-xs h-12 px-10 rounded-full border border-amber-300 cursor-pointer shadow-sm hover:shadow flex items-center justify-center gap-2 active:scale-95"
           >
             <span>Continue to SOAP Generation</span>

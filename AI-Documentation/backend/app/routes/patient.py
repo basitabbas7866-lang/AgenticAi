@@ -444,3 +444,39 @@ def delete_prescription(prescription_id: int):
         return {"success": False, "message": str(e)}
     finally:
         db.close()
+
+
+@router.put("/patient/{patient_id}/update")
+def update_patient(patient_id: str, data: dict):
+    db: Session = SessionLocal()
+    try:
+        patient = db.query(Patient).filter(Patient.patient_id == patient_id).first()
+        if not patient:
+            return {"success": False, "message": "Patient not found"}
+        
+        if "name" in data:
+            patient.name = data["name"]
+        if "age" in data:
+            patient.age = int(data["age"])
+        if "gender" in data:
+            patient.gender = data["gender"]
+        if "phone" in data:
+            patient.phone = data["phone"]
+            
+        db.commit()
+        return {
+            "success": True, 
+            "message": "Patient updated successfully",
+            "patient": {
+                "patient_id": patient.patient_id,
+                "name": patient.name,
+                "age": patient.age,
+                "gender": patient.gender,
+                "phone": patient.phone
+            }
+        }
+    except Exception as e:
+        db.rollback()
+        return {"success": False, "message": str(e)}
+    finally:
+        db.close()

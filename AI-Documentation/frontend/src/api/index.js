@@ -257,5 +257,25 @@ export const registerUser = async (name, email, password, role, specialty = null
   return response;
 };
 
+export const updatePatient = async (patientId, patientData) => {
+  const response = await apiClient.put(`/patient/${patientId}/update`, patientData);
+  return response;
+};
+
+export const updateUser = async (userId, userData) => {
+  const response = await apiClient.put(`/auth/user/${userId}/update`, userData);
+  return response;
+};
+
+export const generateFinalReport = async (patientId, soapNote, prescription, historicalComparison = "") => {
+  const response = await apiClient.post("/generate/final_report", {
+    patient_id: patientId,
+    soap_note: soapNote,
+    prescription,
+    historical_comparison: historicalComparison
+  });
+  return response;
+};
+
 export default apiClient;
 

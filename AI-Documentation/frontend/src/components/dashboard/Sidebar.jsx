@@ -35,23 +35,20 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
         .toUpperCase() || 'CW';
 
     const menuItems = role === 'patient' ? [
-        { id: 'teleconsult', label: 'Online Consultation', helper: 'Start video call with doctor', icon: FaVideo },
-        { id: 'journey', label: 'My Medical History', helper: 'View my visits, tests & timeline', icon: FaHospital },
-        { id: 'profile', label: 'My Profile & Records', helper: 'View personal details & vitals', icon: FaCog }
+        { id: 'journey', label: 'My Care Journey', helper: 'View timeline, tests & follow-ups', icon: FaHospital },
+        { id: 'teleconsult', label: '1:1 Video Teleconsult', helper: 'Join live consultation with doctor', icon: FaVideo },
+        { id: 'profile', label: 'My Records & Specialist', helper: 'Manage doctor link & records', icon: FaCog }
     ] : role === 'nurse' ? [
-        { id: 'dashboard', label: 'Nurse Dashboard', helper: 'Track patient alerts & updates', icon: FaStethoscope },
-        { id: 'patients', label: 'Patients Directory', helper: 'Find or add patient charts', icon: FaUsers },
-        { id: 'journey', label: 'Patient Timeline', helper: 'Track visits, labs & history', icon: FaHospital },
-        { id: 'reviews', label: 'Pending Approvals', helper: 'Review & approve AI suggestions', icon: FaClipboardCheck },
-        { id: 'profile', label: 'My Profile & Settings', helper: 'Manage account & clinic info', icon: FaCog }
+        { id: 'dashboard', label: 'Coordination Hub & Alerts', helper: 'Multi-agent alerts & overdue actions', icon: FaStethoscope },
+        { id: 'patients', label: 'Patient Registry & Triage', helper: 'Manage active patient cohorts', icon: FaUsers },
+        { id: 'journey', label: 'Care Journey Tracker', helper: 'Track appointments, labs & referrals', icon: FaHospital },
+        { id: 'profile', label: 'Coordinator Profile', helper: 'Manage workstation settings', icon: FaCog }
     ] : [ // doctor
-        { id: 'dashboard', label: 'Create SOAP Note', helper: 'Generate SOAP from Audio/Text', icon: FaMicrophone },
-        { id: 'teleconsult', label: 'Online Consultation', helper: 'Start video call with patient', icon: FaVideo },
-        { id: 'patients', label: 'Patients Directory', helper: 'Find or add patient charts', icon: FaUsers },
-        { id: 'journey', label: 'Patient Timeline', helper: 'Track visits, labs & history', icon: FaHospital },
-        { id: 'reports', label: 'Saved Reports', helper: 'View completed patient notes', icon: FaRegFileAlt },
-        { id: 'reviews', label: 'Pending Approvals', helper: 'Review & approve AI suggestions', icon: FaClipboardCheck },
-        { id: 'profile', label: 'My Profile & Settings', helper: 'Manage account & clinic info', icon: FaCog }
+        { id: 'dashboard', label: 'SOAP-RAG Workstation', helper: 'Ambient AI documentation engine', icon: FaMicrophone },
+        { id: 'patients', label: 'Patients Directory', helper: 'Review charts & intake approvals', icon: FaUsers },
+        { id: 'journey', label: 'Patient Journey Timeline', helper: 'Track full clinical history', icon: FaHospital },
+        { id: 'reports', label: 'EHR Consultation Vault', helper: 'Review finalized clinical charts', icon: FaRegFileAlt },
+        { id: 'profile', label: 'Clinician Settings', helper: 'Manage specialty & profile', icon: FaCog }
     ];
 
     const handleTabClick = (tabId) => {
@@ -63,6 +60,10 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
         localStorage.removeItem('user');
         navigate('/auth');
     };
+
+    const userPic = role === 'patient'
+        ? (loggedInUser.patient_id ? localStorage.getItem(`patient_profile_pic_${loggedInUser.patient_id}`) : null)
+        : (loggedInUser.id ? localStorage.getItem(`doctor_profile_pic_${loggedInUser.id}`) : null);
 
     return (
         <aside className="w-full h-full flex flex-col justify-between py-4 px-3.5 bg-white border-r border-slate-200 text-[#1a1a2e] select-none font-sans antialiased shadow-sm relative">
@@ -163,8 +164,12 @@ function Sidebar({ activeTab = 'dashboard', setActiveTab, onClose }) {
 
                 {/* Dynamic User Profile Card */}
                 <div className="flex items-center gap-2.5 p-2 rounded-xl border border-slate-200 bg-slate-50 transition-colors select-none">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1a7f8e] to-[#1a3b6e] text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm">
-                        {initials}
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#1a7f8e] to-[#1a3b6e] text-white flex items-center justify-center font-extrabold text-xs shrink-0 shadow-sm overflow-hidden">
+                        {userPic ? (
+                            <img src={userPic} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            initials
+                        )}
                     </div>
                     <div className="min-w-0 flex-1 text-left">
                         <p className="text-xs text-[#1a3b6e] font-extrabold truncate leading-tight mb-0.5">
